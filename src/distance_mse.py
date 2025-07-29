@@ -1,11 +1,20 @@
 '''
 Created on Dec 19, 2011
+
 @author: gyucel
 
 Updated July 25, 2025
 '''
 import numpy as np
 from scipy.spatial.distance import pdist
+
+
+
+def msedist(d1,d2):
+    sse = ((d1-d2)**2).sum()
+    mse = np.average(sse)
+    return mse
+
 
 def distance_mse(data):
     '''
@@ -34,5 +43,11 @@ def distance_mse(data):
     return dRow, runLogs
 
 if __name__ == '__main__':
+
     tester = np.array([(12,4,1),(2,2,6), (1.5,1,1)])
-    #print(distance_mse(tester))
+    tester = np.array([(12,4,2),(2,2,1),(1,1,1)])
+    result = distance_mse(tester)
+    print(result[0])  # Print the distance row
+    for log in result[1]:  # Print the logs
+        print(log[0])
+        print(log[1])

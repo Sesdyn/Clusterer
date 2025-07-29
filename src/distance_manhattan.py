@@ -29,4 +29,9 @@ def distance_manhattan(data_wo_labels):
 
 if __name__ == '__main__':
     tester = np.array([(12,4,1),(2,2,6), (1.5,1,1)])
-    #print(distance_manhattan(tester))
+    result = distance_manhattan(tester)
+    print(result[0])  # Print the distance row
+    for log in result[1]:
+        print(log[0])  # Print the description of each run
+        print(log[1])  # Print the data series for each run
+
