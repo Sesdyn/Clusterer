@@ -1,15 +1,14 @@
 '''
 Created on Dec 19, 2011
-
-@author: gyucel
+Revised on July 29, 2025
+Revised by: gyucel
+This module implements the MSE (mean squared-error) distance between two data series.
+The MSE distance is equal to the SSE (sum of squared-errors) distance divided by the number of data points in the data series.
+The MSE distance only works with data series of equal length.
 '''
-
-
 
 import numpy as np
 
-#from expWorkbench import EMAError
-#from expWorkbench.EMAlogging import info
 
 def msedist(d1,d2):
     sse = ((d1-d2)**2).sum()
@@ -53,4 +52,9 @@ def distance_mse(data):
     return dRow, runLogs
 
 if __name__ == '__main__':
-    tester = np.array([(12,4),(2,2)])
+    tester = np.array([(12,4,2),(2,2,1),(1,1,1)])
+    result = distance_mse(tester)
+    print(result[0])  # Print the distance row
+    for log in result[1]:  # Print the logs
+        print(log[0])
+        print(log[1])
