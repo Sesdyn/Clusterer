@@ -2,3 +2,6 @@ Libs:
 1. numpy
 2. xlrd
 3. matplotlib
+4. dtaidistance
+5. scipy
+6. numba
