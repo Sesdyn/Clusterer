@@ -6,11 +6,12 @@ The module provides the methods for importing, pre-processing, clustering and po
     * Major revision on August 09, 2014 - Enthought dependencies are removed
 .. codeauthor:: 
      gyucel <gonenc.yucel (at) boun (dot) edu (dot) tr>,
-                
+
+Updated July 30, 2025
 '''
 from __future__ import division
 import logging as log
-log.basicConfig(filename='../output/Clusterer.log', format='%(levelname)s:%(message)s - %(asctime)s', datefmt='%H:%M:%S', filemode='w', level=log.DEBUG)
+#log.basicConfig(filename='../output/Clusterer.log', format='%(levelname)s:%(message)s - %(asctime)s', datefmt='%H:%M:%S', filemode='w', level=log.DEBUG)
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -27,26 +28,21 @@ from distance_mse import distance_mse
 from distance_sse import distance_sse
 from distance_dtw import distance_dtw
 from distance_manhattan import distance_manhattan
-
-#temporary imports
 from behavior_splitter import construct_features
 
-# The cluster method only recognizes the distances that are listed in the distance_functions dictionarry
-distance_functions = {'pattern': distance_pattern, 'pattern_dtw': distance_pattern_dtw,'mse': distance_mse, 'sse': distance_sse, 'dtw': distance_dtw, 'manhattan': distance_manhattan}
-
-
-# Global variables
-#runLogs = []
 varName = ""
 clusterCount = 0
+
+# The cluster method only recognizes the distances that are listed in the distance_functions dictionary
+distance_functions = {'pattern': distance_pattern, 'pattern_dtw': distance_pattern_dtw,'mse': distance_mse, 'sse': distance_sse, 'dtw': distance_dtw, 'manhattan': distance_manhattan}
 
 
 def import_data(inputFileName, withClusters = False):
     '''
     Method that imports dataseries to be analyzed from .xlsx files. Unless specified otherwise, looks for the file in the datasets folder of the project. Optionally it can also read the original clusters of the dataseries. For that, the input file should contain a sheet names *clusters*, and the order of the dataseries in this sheet should be identical to the sorting in the data sheet
-    
+
     :param inputFileName: The name of the .xlsx file that contains the dataset
-    :param withClusters: If Trus, checks the sheet names *clusters* and returns also the original clusters/classess of dataseries
+    :param withClusters: If True, checks the sheet names *clusters* and returns also the original clusters/classess of dataseries
     :returns: Two lists. The first one contains 2D lists, each corresponding to a single dataseries. The first entry is a string that keeps the label of the sample, and the second entry is a numpy array that keeps the data. The second list is optional, and returns when *withClusters* is True. It contains the original clusters of the input data  
     :rtype: List (3D)
     '''
@@ -57,24 +53,20 @@ def import_data(inputFileName, withClusters = False):
     noRuns = sheet_data.nrows-1
     
     #dataSet is a 3D list. Each entry is a 2D list object. First dimension is a string that keeps the label of the data series, and the second dimension is a numpy array that keeps the actual data
-    data_w_desc = []
-    clusters_original = []
-    for i in range(noRuns):
-            entry = []
-            label = sheet_data.cell(i+1,0).value
-            entry.append(label)
-            data = np.array(sheet_data.row_values(i+1,1))
-            entry.append(data)
-            data_w_desc.append(entry)
+    all_rows = [sheet_data.row_values(i+1) for i in range(noRuns)]
+    
+    # Vectorized separation of labels and data
+    labels = [row[0] for row in all_rows]
+    data_arrays = [np.array(row[1:]) for row in all_rows]
+    
+    data_w_desc = list(zip(labels, data_arrays))
+    
     if withClusters:
         try:
             sheet_clusters = book.sheet_by_name('clusters')
-            for i in range(noRuns):
-                clust = sheet_clusters.cell(i+1,1).value
-                clusters_original.append(clust)
+            clusters_original = [sheet_clusters.cell(i+1, 1).value for i in range(noRuns)]
         except XLRDError:
-            for i in range(noRuns):
-                clusters_original.append('NA')
+            clusters_original = ['NA'] * noRuns
         return data_w_desc, clusters_original 
     else:
         return data_w_desc
@@ -82,23 +74,21 @@ def import_data(inputFileName, withClusters = False):
 
 def import_all_files():
     names = ["StellaFreeFloat","StellaDefault","Vensim"]
-    full_data = pd.DataFrame()
-    for n in names:
-        data = import_all(n)
-        full_data = full_data.append(data,ignore_index=True)
+    dataframes = [import_all(n) for n in names]
+    full_data = pd.concat(dataframes, ignore_index=True)
     return full_data
+
 
 def import_all(name):
     relPathFileFolder = '../datasets'
     inputFileName='Dataset_Basic_'+name
     book = open_workbook(relPathFileFolder+'/'+inputFileName+'.xlsx')
     names = book.sheet_names()
-    complete_data = pd.DataFrame()
-    for n in names:
-        data = import_pandas_data(name,n)
-        complete_data = complete_data.append(data,ignore_index=True)
-    complete_data['Source']=[name]*complete_data.shape[0]
+    dataframes = [import_pandas_data(name, n) for n in names]
+    complete_data = pd.concat(dataframes, ignore_index=True)
+    complete_data['Source'] = name
     return complete_data
+
 
 def import_pandas_data(name, cls):
     relPathFileFolder = '../datasets'
@@ -106,27 +96,56 @@ def import_pandas_data(name, cls):
     book = open_workbook(relPathFileFolder+'/'+inputFileName+'.xlsx')
     sheet_data=book.sheet_by_name(cls)
     noRuns = sheet_data.nrows-1
-    for i in range(noRuns):
-            entry = []
-            if i == 0:
-                data =[sheet_data.row_values(i+1)]
-            else:
-                data.append(sheet_data.row_values(i+1))
+    
+    data = [sheet_data.row_values(i+1) for i in range(noRuns)]
     data = pd.DataFrame(np.array(data))
     data = data.rename(columns = {0:'Id'})
-    clss = [cls]*noRuns
-    data["Class"] = clss
+    data["Class"] = cls
     
     return data
-def cluster(data_w_labels, 
-            distance='pattern',
-            interClusterDistance='complete',
-            cMethod='inconsistent',
-            cValue=1.5,
-            plotDendrogram=False,
-            **kwargs):
+
+
+def normalize_data(data_w_labels):
     '''
+    Compute the normalized version of the time-series data such that
+    y_i = x_i - min(x) / (max(x) - min(x))
+    :param data: 1-D or 2-D numpy ndarray, where the first column has description information
+    :returns: ndarray, Normalized input data
+    '''
+    # Extract all data arrays, normalize them in batch, then reassign
+    data_arrays = np.array([item[1] for item in data_w_labels])
     
+    mins = np.min(data_arrays, axis=1, keepdims=True)
+    maxs = np.max(data_arrays, axis=1, keepdims=True)
+    normalized_arrays = (data_arrays - mins) / (maxs - mins)
+    
+    result = [[item[0], normalized_arrays[i]] for i, item in enumerate(data_w_labels)]
+    
+    return result
+
+
+def standardize_data(data_w_labels):
+    '''
+    Compute the standardized version of the time-series data such that
+    y_i = x_i - mean(x) / std(x)
+    :param data: 1-D or 2-D numpy ndarray, where the first column has description information
+    :returns: ndarray, Standardized input data
+    '''
+    # Extract all data arrays, standardize them in batch, then reassign
+    data_arrays = np.array([item[1] for item in data_w_labels])
+
+    means = np.mean(data_arrays, axis=1, keepdims=True)
+    stds = np.std(data_arrays, axis=1, keepdims=True)
+    standardized_arrays = (data_arrays - means) / stds
+
+    result = [[item[0], standardized_arrays[i]] for i, item in enumerate(data_w_labels)]
+
+    return result
+
+
+def cluster(data_w_labels,  distance='pattern', interClusterDistance='complete',
+            cMethod='inconsistent', cValue=1.5, plotDendrogram=False, **kwargs):
+    '''
     Method that clusters time-series data based on the specified distance measure using a hierarchical clustering algorithm. Optionally the method also plots the dendrogram generated by the clustering algorithm
     
     :param data: A list of lists. Each entry of the master list corresponds to a dataseries. The second order lists have two entries: The first entry is the label of the dataseries, and the second entry is a numpy array that keeps the data
@@ -165,30 +184,23 @@ def cluster(data_w_labels,
     * 'no of sisters': 50 (for pattern distance)
 
     '''
-
     # Construct a list that includes only the data part. Gets rid of the label string in dataSet[i][0]
-    data_wo_labels = []
-    for i in range(len(data_w_labels)):
-        data_wo_labels.append(data_w_labels[i][1])
+    data_wo_labels = [item[1] for item in data_w_labels]
     
     # Construct a list with distances. This list is the upper triangle
     # of the distance matrix
     dRow, data_w_desc = construct_distances(data_wo_labels, distance, **kwargs)
 
-    
     # Allocate individual runs into clusters using hierarchical agglomerative 
     # clustering. clusterSetup is a dictionary that customizes the clustering 
     # algorithm to be used.
     
-    clusters, data_w_desc = flatcluster(dRow, 
-                                           data_w_desc, 
-                                           plotDendrogram=plotDendrogram,
-                                           interClusterDistance=interClusterDistance,
-                                           cMethod=cMethod,
-                                           cValue=cValue)
-    
+    clusters, data_w_desc = flatcluster(dRow, data_w_desc, plotDendrogram=plotDendrogram, 
+                                        interClusterDistance=interClusterDistance, cMethod=cMethod, cValue=cValue)
+
     clusterList = create_cluster_list(clusters, dRow, data_w_desc)
     return dRow, clusterList, clusters
+
 
 def create_cluster_list(clusters, distRow, data_w_desc):
     '''  
@@ -200,33 +212,34 @@ def create_cluster_list(clusters, distRow, data_w_desc):
     
     :returns: A list of Cluster objects
     :rtype: List
-
-
     '''
     
     nr_clusters = np.max(clusters)
     cluster_list = []
+    total_size = clusters.shape[0]
+    
     for i in range(1, nr_clusters+1):
-        #determine the indices for cluster i
+        # Determine the indices for cluster i
         indices = np.where(clusters==i)[0]
+        cluster_size = indices.shape[0]
         
-        drow_indices = np.zeros((indices.shape[0]**2-indices.shape[0])/2, dtype=int)
-        s = 0
-        #get the indices for the distance for the runs in the cluster
-        for q in range(indices.shape[0]):
-            for r in range(q+1, indices.shape[0]):
-                b = indices[q]
-                a = indices[r]
-                
-                drow_indices[s] = get_drow_index(indices[r],
-                                                 indices[q], 
-                                                 clusters.shape[0])
-                s+=1
+        if cluster_size == 1:
+            originalIndex = indices[0]
+            cluster = Cluster(i,  indices, data_w_desc[originalIndex], [data_w_desc[originalIndex]])
+            cluster_list.append(cluster)
+            continue
         
-        #get the distance for the runs in the cluster
-        dist_clust = distRow[drow_indices]
+        q_flat, r_flat = np.triu_indices(cluster_size, k=1)
+        
+        indices_q = indices[q_flat]
+        indices_r = indices[r_flat]
+        
+        i_vals = indices_r
+        j_vals = indices_q
+        drow_indices = total_size * j_vals - j_vals * (j_vals + 1) // 2 + i_vals - j_vals - 1
         
         #make a distance matrix
+        dist_clust = distRow[drow_indices]
         dist_matrix = squareform(dist_clust)
 
         #sum across the rows
@@ -237,39 +250,15 @@ def create_cluster_list(clusters, distRow, data_w_desc):
     
         # convert this cluster specific index back to the overall cluster list 
         # of indices
-        originalIndices = np.where(clusters==i)
-        originalIndex = originalIndices[0][min_cIndex]
+        originalIndex = indices[min_cIndex]
 
-        a = list(np.where(clusters==i)[0])
-        a = [int(entry) for entry in a]    
+        indices_list = indices.astype(int).tolist()
         
-        cluster = Cluster(i, 
-                          np.where(clusters==i)[0], 
-                          data_w_desc[originalIndex],
-                          [data_w_desc[entry] for entry in a])
+        cluster = Cluster(i, indices, data_w_desc[originalIndex], [data_w_desc[idx] for idx in indices_list])
         cluster_list.append(cluster)
         
     return cluster_list
 
-def get_drow_index(i,j, size):
-    '''
-    Get the index in the distance row for the distance between i and j.
-    
-    :param i; result i
-    :param j: result j
-    :param size: the number of results
-    
-    ...note:: i > j
-    
-    '''
-    assert i > j
-
-    index = 0
-    for q in range(size-j, size):
-        index += q
-    index = index+(i-(1*j))-1
-
-    return index
 
 def construct_distances(data_wo_labels, distance='pattern', **kwargs):
     """ 
@@ -288,7 +277,6 @@ def construct_distances(data_wo_labels, distance='pattern', **kwargs):
     :returns: A row vector of distances, and a list that stores the original data with distance-relevant dataseries descriptor 
     :rtype: Tuple (2 lists)
     """
-    
     # Sets up the distance function according to user specification
     try:
         return distance_functions[distance](data_wo_labels, **kwargs)
@@ -296,13 +284,9 @@ def construct_distances(data_wo_labels, distance='pattern', **kwargs):
         log.error('Unknown distance is used')
         print ('Unknown distance is used')
         raise
-        
-def flatcluster(dRow, data, 
-                interClusterDistance='complete',
-                plotDendrogram=True,
-                cMethod='inconsistent',
-                cValue=2.5):
 
+        
+def flatcluster(dRow, data, interClusterDistance='complete', plotDendrogram=True, cMethod='inconsistent', cValue=2.5):
     z = linkage(dRow, interClusterDistance)
     
     if plotDendrogram:
@@ -311,31 +295,27 @@ def flatcluster(dRow, data,
     clusters = fcluster(z, cValue, cMethod)
     
     noClusters = max(clusters)
-    #print 'Total number of clusters:', noClusters
-    for i in range(noClusters):
-        counter = 0
-        for j in range(len(clusters)):
-            if clusters[j]==(i+1):
-                counter+=1
-        #print "Cluster",str(i+1),":",str(counter)
+    
+    #unique_clusters, cluster_counts = np.unique(clusters, return_counts=True)
+    #print('Total number of clusters:', noClusters)
+    #for cluster_id, count in zip(unique_clusters, cluster_counts):
+    #    print("Cluster", cluster_id, ":", count)
     
     global clusterCount
     clusterCount = noClusters
+    
+    cluster_strings = [str(cluster_id) for cluster_id in clusters]
     for i, log in enumerate(data):
-        log[0]['Cluster'] = str(clusters[i])
+        log[0]['Cluster'] = cluster_strings[i]
     
     return clusters, data
-           
-def plotdendrogram(z):
-    
-    dendrogram(z,
-               truncate_mode='lastp',
-               show_leaf_counts=True,
-               show_contracted=True
-               )
-    #plt.show()
 
-  
+
+def plotdendrogram(z):
+    dendrogram(z, truncate_mode='lastp', show_leaf_counts=True, show_contracted=True)
+    plt.show()
+
+
 def plot_clusters(cluster_list, dist, mode='show',fname='results'):
     '''
     Takes a list of Cluster objects as an input. Plots the members of each cluster on a seperate plot
@@ -346,10 +326,10 @@ def plot_clusters(cluster_list, dist, mode='show',fname='results'):
     :param mode: default is show, use save to save the figure in png format
     :param fname: if mode=save option is used this is used as the filename, type without extension
     :rtype: Matplotlib graph
-    '''  
+    '''
     main_fig = plt.figure(figsize=(14,10))
     #main_fig.suptitle('deneme')
-    main_fig.canvas.set_window_title(dist + ' distance') 
+    main_fig.canvas.manager.set_window_title(dist + ' distance')
     no_plots = len(cluster_list)
     no_cols = 4
     no_rows = int(np.math.ceil(float(no_plots) / no_cols))
@@ -376,7 +356,7 @@ def plot_clusters(cluster_list, dist, mode='show',fname='results'):
         plt.show()
     elif mode=='save':
         plt.savefig('{0}.png'.format(fname))
-    
+
 
 def compare_clusterings(clusters1, clusters2):
     '''
@@ -388,77 +368,35 @@ def compare_clusterings(clusters1, clusters2):
     :returns: Two numbers, first being the RAND index, and the second being the Jaccard index
     '''
     
-    
     if len(clusters1) != len(clusters2):
-        print "Number of members of these two clusterings are not equal"
+        print("Number of members of these two clusterings are not equal")
         return 0
-    c1_same = np.zeros(shape=(np.sum(np.arange(len(clusters1))),))
-    c1_different = np.zeros(shape=(np.sum(np.arange(len(clusters1))),))
+
+    if not isinstance(clusters1, np.ndarray):
+        c1 = np.array(clusters1)
+        c2 = np.array(clusters2)
+
+    n = len(c1)
+    c1_matrix = c1[:, np.newaxis] == c1[np.newaxis, :]
+    c2_matrix = c2[:, np.newaxis] == c2[np.newaxis, :]
     
-    index = -1
-    for i in range(len(clusters1)):            
-        for j in range(i+1, len(clusters1)):
-            index += 1
-            if clusters1[i] == clusters1 [j]:
-                c1_same[index] = 1
-            else: 
-                c1_different[index] = 1
-    c2_same = np.zeros(shape=(np.sum(np.arange(len(clusters2))),))
-    c2_different = np.zeros(shape=(np.sum(np.arange(len(clusters2))),))
-    index = -1
-    for i in range(len(clusters2)):            
-        for j in range(i+1, len(clusters2)):
-            index += 1
-            if clusters2[i] == clusters2 [j]:
-                c2_same[index] = 1  
-            else:
-                c2_different[index] = 1
+    # Extract upper triangular part to get unique pairs
+    # k=1 parameter excludes the diagonal
+    upper_tri_mask = np.triu(np.ones((n, n), dtype=bool), k=1)
     
-    same_in_both = np.multiply(c1_same, c2_same)         
-    different_in_both = np.multiply(c1_different, c2_different)
-    same_onlyin_c1 = np.multiply(c1_same, c2_different)
-    same_onlyin_c2 = np.multiply(c2_same, c1_different)
+    c1_same_pairs = c1_matrix[upper_tri_mask]
+    c2_same_pairs = c2_matrix[upper_tri_mask]
     
-    count_same_in_both = np.sum(same_in_both)
-    count_different_in_both = np.sum(different_in_both)
-    count_same_onlyin_c1 = np.sum(same_onlyin_c1)
-    count_same_onlyin_c2 = np.sum(same_onlyin_c2)
+    count_same_in_both = np.sum(c1_same_pairs & c2_same_pairs)
+    count_different_in_both = np.sum(~c1_same_pairs & ~c2_same_pairs)
+    count_same_onlyin_c1 = np.sum(c1_same_pairs & ~c2_same_pairs)
+    count_same_onlyin_c2 = np.sum(~c1_same_pairs & c2_same_pairs)
     
     rand_index = (count_same_in_both + count_different_in_both) / (count_same_in_both + count_same_onlyin_c1 + count_same_onlyin_c2 + count_different_in_both)
     jackard_index = count_same_in_both / (count_same_in_both + count_same_onlyin_c1 + count_same_onlyin_c2)
+    
     return rand_index, jackard_index
 
-def normalize_data(data_w_labels):
-    '''
-    Compute the normalized version of the time-series data such that
-    y_i = x_i - min(x) / (max(x) - min(x))
-    
-    :param data: 1-D or 2-D numpy ndarray, where the first column has description information
-
-    :returns: ndarray, Normalized input data
-    '''
-    result = data_w_labels[:]
-    for i in range(len(data_w_labels)):
-        data = data_w_labels[i][1]
-        norm = (data - np.min(data)) / (np.max(data) - (np.min(data)))
-        result[i][1] = norm
-    return result
-
-def standardize_data(data_w_labels):
-    '''
-    Compute the standardized version of the time-series data such that
-    y_i = x_i - mean(x) / std(x)
-    
-    :param data: 1-D or 2-D numpy ndarray, where the first column has description information
-
-    :returns: ndarray, Standardized input data
-    '''
-    result = data_w_labels[:]
-    for i in range(len(data_w_labels)):
-        data = data_w_labels[i][1]
-        standardized = (data - np.mean(data)) / np.std(data)
-        result[i][1] = standardized
-    return result
 
 def experiment_controller(inputFileName,
                           distanceMethod='pattern',
@@ -480,9 +418,7 @@ def experiment_controller(inputFileName,
 
     data_w_labels, clusters_original = import_data(inputFileName, withClusters = True)
     #data_w_labels = import_data(inputFileName, withClusters = False)
-    
-    
-    
+
     # Transformations if both are True then only normalization is performed
     if transform == 'normalize':
         data = normalize_data(data_w_labels)
@@ -498,39 +434,29 @@ def experiment_controller(inputFileName,
         jaccards = []
         for i in range(replicate):
             begin_time = time.time()
-            dist_row, cluster_list, clusters = cluster(data,
-                                                       distanceMethod,
-                                                       flatMethod,
-                                                       cMethod,
-                                                       cValue)
-            end_time = time.time()
-            run_times.append(end_time - begin_time)
+            dist_row, cluster_list, clusters = cluster(data, distanceMethod, flatMethod, cMethod, cValue)
+            run_times.append(time.time() - begin_time)
             try:
                 r, j = compare_clusterings(clusters, clusters_original)
             except TypeError:
                 r, j = None, None
             rands.append(r)
             jaccards.append(j)
-        
+
         run_time = np.mean(run_times)
         rand = np.mean(rands)
         jaccard = np.mean(jaccards)
     # For other distance methods no replication is made
     else:
         begin_time = time.time()
-        dist_row, cluster_list, clusters = cluster(data,
-                                                   distanceMethod,
-                                                   flatMethod,
-                                                   cMethod,
-                                                   cValue)
-        end_time = time.time()
-        run_time = end_time - begin_time
-        
+        dist_row, cluster_list, clusters = cluster(data, distanceMethod, flatMethod, cMethod, cValue)
+        run_time = time.time() - begin_time
+
         try:
             rand, jaccard = compare_clusterings(clusters, clusters_original)
         except TypeError:
             rand, jaccard = None, None
-    
+
     noClusters = max(clusters)
     outputFileName = '{0}-{1}-{2}-{3}.xlsx'.format(distanceMethod,flatMethod,transform,note)
     path_adjust = os.path.join(os.getcwd(),'..','output')
@@ -552,7 +478,6 @@ def experiment_controller(inputFileName,
     ws.write(3,1,cValue)
     ws.write(4,0,"Time:")
     ws.write(4,1,time.strftime("%H:%M %d/%m/%Y"))
-    
         
     ws.write(5,0,'Distance Measure:')
     ws.write(6,0,distanceMethod)
@@ -564,7 +489,6 @@ def experiment_controller(inputFileName,
     ws.write(7,2,'Rand')
     ws.write(8,2,'Run Time')
     
-
     ws.write(5,4,'Transformation')
     ws.write(6,4,transform)
     ws.write(7,4,transform)
@@ -574,18 +498,17 @@ def experiment_controller(inputFileName,
     ws.write(6,5,jaccard)
     ws.write(7,5,rand)
     ws.write(8,5,run_time)
-    
         
     ws.write(11,0,'Total number of clusters:')
     ws.write(11,1,noClusters)
     
-    for i in range(noClusters):
-        counter = 0
-        for j in range(len(clusters)):
-            if clusters[j]==(i+1):
-                counter+=1
-        ws.write(12+i,0,'Cluster {0}:'.format(i+1))
-        ws.write(12+i,1,counter)
+    # Vectorized cluster counting
+    clusters_array = np.array(clusters)
+    unique_clusters, cluster_counts = np.unique(clusters_array, return_counts=True)
+    
+    for i, (cluster_id, count) in enumerate(zip(unique_clusters, cluster_counts)):
+        ws.write(12+i,0,'Cluster {0}:'.format(cluster_id))
+        ws.write(12+i,1,count)
     
     ws.write(23,0,'Index')
     ws.write(23,1,'Original Cluster')
@@ -598,11 +521,12 @@ def experiment_controller(inputFileName,
     w.close()
     
     very_end_time = time.time()
-    print 'Grand total time:', very_end_time - very_begin_time
+    print('Grand total time:', very_end_time - very_begin_time)
     
     if plot==True:
         plot_clusters(cluster_list, distanceMethod, mode='save', fname=os.path.join(path_adjust, os.path.splitext(outputFileName)[0]))
-    
+
+
 class Cluster(object):
     '''
     Contains information about a data-series cluster, as well as some methods to help analyzing a cluster.
@@ -614,74 +538,22 @@ class Cluster(object):
         :ivar size: Number of elements (i.e. dataseries) in the cluster c
     '''
 
-    def __init__(self, 
-                 cluster_no, 
-                 all_ds_indices, 
-                 sample_ds,
-                 member_dss):
-        '''
-        Constructor
-        '''
+    def __init__(self, cluster_no, all_ds_indices, sample_ds, member_dss):
         self.no = cluster_no
         self.indices = all_ds_indices
         self.sample = sample_ds
         self.size = self.indices.size
         self.members = member_dss
-        
+
     def error(self):
         return self.sample
 
 
 '''
 The main method where the user needs to specify the path to the simulation results
-'''   
+'''
 if __name__ == '__main__':
-    
-    #inputFileName = 'TestPythonR'
-    #inputFileName = 'TestPythonR_w_dummy_clusters'
-    #inputFileName = 'TestModel_Demo'
     inputFileName = 'TestSet_wo_Osc'
-    
-    experiment_controller(inputFileName,
-                           distanceMethod='pattern_dtw',
-                           flatMethod='complete',
-                           transform='normalize',
-                           cMethod='maxclust',
-                           note="wSLope=6",
-                           cValue=9, replicate=1)
-        
-    #===========================================================================
-    # # Reads data series from the file named "TestModel_Demo" from the sheet named 'data'. Since the file also contains the original clusters, the method also returns those as a list
-    #  sampleSet, clusters_original  = import_data(inputFileName, withClusters = True)
-    #  data_wo_labels = []
-    #  std_sampleSet = standardize_data(sampleSet)
-    #  norm_sampleSet = normalize_data(sampleSet)
-    #    
-    #  for i in range(len(sampleSet)):
-    #      data_wo_labels.append(sampleSet[i][1])
-    #    
-    #  features = construct_features(data_wo_labels)
-    #    
-    #  for i in range(len(features)):
-    #      print i+1, clusters_original[i]
-    #      print features[i]
-    #===========================================================================
-    
-    #experiment_controller(inputFileName)
-    # Generates clusters using the mse distance, using hiearchical clustering with max 10 clusters, it does not plot the dendrogram. It returns a distance row, a list of Cluster objects, and a list that contains the cluster labels for each dataseries
-    #dist_row1, cluster_list1, clusters1 = cluster(sampleSet, distance = 'mse', cMethod='maxclust', cValue= 20, plotDendrogram=False)
-    #dist_row2, cluster_list2, clusters2 = cluster(sampleSet, distance = 'pattern', cMethod='maxclust', cValue= 10, plotDendrogram=False)
-    #dist_row3, cluster_list3, clusters3 = cluster(sampleSet, distance = 'dtw', cMethod='maxclust', cValue= 10, plotDendrogram=False)
-    
-    # The method takes two clusterings and returns two comparative indices.
-    #rand, jackard = compare_clusterings(clusters3, clusters_original)
 
-    #print rand, jackard
-    
-    #print compare_clusterings(clusters1, clusters2)
-    
-    #Plots the given cluster list. Uses the second argument, i.e. 'mse', as the title of the plotting window
-    #plot_clusters(cluster_list1, 'mse')
-    #plot_clusters(cluster_list3, 'dtw') #plot the clusters for dtw distance
-    #print dist_row3 #print the distance matrix generated by dtw function
-    #plt.show()
+    experiment_controller(inputFileName, distanceMethod='pattern_dtw', flatMethod='complete',
+           transform='normalize', cMethod='maxclust', note="wSLope=6", cValue=9, replicate=1)

@@ -9,10 +9,11 @@ Draws some x-y line and scatter plots. On the left hand plot:
    history".
 """
 
-#Import output from cPickle and prepare data
-import cPickle
+#Import output from pickle and prepare data
+import pickle
 import operator
 import numpy as np
+from functools import reduce
 
 # Enthought library imports
 from enthought.enable.api import BaseTool
@@ -90,13 +91,13 @@ class Demo(HasTraits):
         
         #load the data to visualize. 
         # it is a list of data in the 'results' format, each belonging to a cluster - gonenc
-        resultsList = cPickle.load(open(self.fileName, 'r'))
+        resultsList = pickle.load(open(self.fileName, 'rb'))
         
         
         #get the names of the outcomes to display
         outcome = []
         for entry in resultsList:
-            a = entry[0][1].keys()
+            a = list(entry[0][1].keys())
             outcome.append(a[0])
         
 #        outcome = resultsList[0][0][1].keys()
@@ -106,7 +107,7 @@ class Demo(HasTraits):
         x = resultsList[0][0][1]['TIME']
         
         # the list and number of features (clustering related) stored regarding each run
-        features = resultsList[0][0][0][0].keys()
+        features = list(resultsList[0][0][0][0].keys())
         noFeatures = len(features)
     
         # Iterate over each cluster to prepare the cases corresponding to indivisdual runs in
@@ -137,7 +138,7 @@ class Demo(HasTraits):
             pd  = ArrayPlotData(index = x)
             for j in range(len(results)): 
                 data = np.array(results[j][1].get(outcome[c]))
-                print "y"+str(c)+'-'+str(j)
+                print("y"+str(c)+'-'+str(j))
                 pd.set_data("y"+str(c)+'-'+str(j),  data)
             pds.append(pd)
         
@@ -160,7 +161,7 @@ class Demo(HasTraits):
             #plot the results
             for i in range(len(results)):
                 plotvalue = "y"+str(c)+'-'+str(i)
-                print plotvalue
+                print(plotvalue)
                 color = colors[i%len(colors)]
                 plot.plot(("index", plotvalue), name=plotvalue, color=color)
                 

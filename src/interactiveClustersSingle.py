@@ -9,10 +9,11 @@ Draws some x-y line and scatter plots. On the left hand plot:
    history".
 """
 
-#Import output from cPickle and prepare data
-import cPickle
+#Import output from pickle and prepare data
+import pickle
 import operator
 import numpy as np
+from functools import reduce
 
 # Enthought library imports
 from enthought.enable.api import BaseTool
@@ -87,8 +88,8 @@ class Demo(HasTraits):
             
     
     def _plot_default(self):
-        results = cPickle.load(open(self.fileName, 'r'))
-        outcomes = results[0][1].keys()
+        results = pickle.load(open(self.fileName, 'rb'))
+        outcomes = list(results[0][1].keys())
         outcomes.pop(outcomes.index('TIME'))
         x = results[0][1]['TIME']
     
@@ -97,7 +98,7 @@ class Demo(HasTraits):
             self.cases['y'+str(j)] = aCase
     
         uncertainties = results[0][0][0]
-        uncertaintynames = uncertainties.keys()
+        uncertaintynames = list(uncertainties.keys())
         uncertaintyvalues = []
         for key in uncertainties.keys():
             uncertaintyvalues.append(uncertainties[key])
@@ -235,7 +236,7 @@ class LineSelectorTool(BaseTool):
   
     def _select(self, selected):
         """ Decorates a plot to indicate it is selected """
-        for plot in reduce(operator.add, selected.container.plots.values()):
+        for plot in reduce(operator.add, list(selected.container.plots.values())):
             if plot != selected:
                 plot.alpha /= 3
             else:
@@ -244,7 +245,7 @@ class LineSelectorTool(BaseTool):
         plot.request_redraw()
 
     def _deselect(self, selected):
-        for plot in reduce(operator.add, selected.container.plots.values()):
+        for plot in reduce(operator.add, list(selected.container.plots.values())):
             if plot != selected:
                 plot.alpha *= 3
             else:
