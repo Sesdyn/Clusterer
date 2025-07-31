@@ -8,10 +8,11 @@ Draws some x-y line and scatter plots. On the left hand plot:
    history".
 """
 
-#Import output from cPickle and prepare data
-import cPickle
+#Import output from pickle and prepare data
+import pickle
 import operator
 import numpy as np
+from functools import reduce
 
 # Enthought library imports
 from enable.api import BaseTool
@@ -93,14 +94,14 @@ class singlePlot(HasTraits):
     def _plot_default(self):
         
         noDataPoint = len(self.data[0][1])
-        x = range(noDataPoint)
+        x = list(range(noDataPoint))
     
         for run in self.data:
             tempCase = [Feature(name=key, value=value) for key, value in run[0].items()]
             self.cases[str(run[0]['Index'])] = tempCase
     
         features = self.data[0][0]
-        featureNames = features.keys()
+        featureNames = list(features.keys())
         featureValues = []
         for key in features.keys():
             featureValues.append(features[key])
@@ -209,7 +210,7 @@ class groupPlot(HasTraits):
     def _plot_default(self):
         
         noDataPoint = len(self.data[0][0][1])
-        x = range(noDataPoint)
+        x = list(range(noDataPoint))
     
         for cluster in self.data:
             for run in cluster:
@@ -217,7 +218,7 @@ class groupPlot(HasTraits):
                 self.cases[str(run[0]['Index'])] = tempCase
     
         features = self.data[0][0][0]
-        featureNames = features.keys()
+        featureNames = list(features.keys())
         featureValues = []
         for key in features.keys():
             featureValues.append(features[key])
@@ -238,7 +239,7 @@ class groupPlot(HasTraits):
         
         # Create a container and add our plots
         d1 = 1
-        d2 = len(self.data)/d1
+        d2 = len(self.data)//d1
         #d2 = round(d2b,0)+1
         container = GridContainer(bgcolor="lightgray", use_backbuffer=True, shape=(d2, d1))
     
