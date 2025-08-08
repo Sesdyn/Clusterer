@@ -9,15 +9,11 @@ The module provides the methods for importing, pre-processing, clustering and po
 
 Updated July 30, 2025
 '''
-from __future__ import division
-import logging as log
-#log.basicConfig(filename='../output/Clusterer.log', format='%(levelname)s:%(message)s - %(asctime)s', datefmt='%H:%M:%S', filemode='w', level=log.DEBUG)
-
 import matplotlib.pyplot as plt
 import numpy as np
+import math
 from scipy.spatial.distance import squareform
 from scipy.cluster.hierarchy import fcluster, linkage, dendrogram
-from xlrd import open_workbook, XLRDError #http://pypi.python.org/pypi/xlrd
 import xlsxwriter
 import os
 import time
@@ -28,14 +24,11 @@ from distance_mse import distance_mse
 from distance_sse import distance_sse
 from distance_dtw import distance_dtw
 from distance_manhattan import distance_manhattan
-from behavior_splitter import construct_features
-
-varName = ""
-clusterCount = 0
+import pysd
+import itertools
 
 # The cluster method only recognizes the distances that are listed in the distance_functions dictionary
 distance_functions = {'pattern': distance_pattern, 'pattern_dtw': distance_pattern_dtw,'mse': distance_mse, 'sse': distance_sse, 'dtw': distance_dtw, 'manhattan': distance_manhattan}
-
 
 def import_data(inputFileName, withClusters = False):
     '''
@@ -46,14 +39,24 @@ def import_data(inputFileName, withClusters = False):
     :returns: Two lists. The first one contains 2D lists, each corresponding to a single dataseries. The first entry is a string that keeps the label of the sample, and the second entry is a numpy array that keeps the data. The second list is optional, and returns when *withClusters* is True. It contains the original clusters of the input data  
     :rtype: List (3D)
     '''
+    possible_paths = ['datasets', '../datasets']
+    file_path = None
     
-    relPathFileFolder = '../datasets'    #Relative path to the folder in which dataset files reside
-    book = open_workbook(relPathFileFolder+'/'+inputFileName+'.xlsx')
-    sheet_data = book.sheet_by_name('data')
-    noRuns = sheet_data.nrows-1
+    for relPathFileFolder in possible_paths:
+        test_path = relPathFileFolder+'/'+inputFileName+'.xlsx'
+        if os.path.exists(test_path):
+            file_path = test_path
+            break
+    
+    if file_path is None:
+        raise FileNotFoundError(f"Could not find {inputFileName}.xlsx")
+    
+    # Read the data sheet using pandas
+    df_data = pd.read_excel(file_path, sheet_name='data')
+    noRuns = len(df_data)
     
     #dataSet is a 3D list. Each entry is a 2D list object. First dimension is a string that keeps the label of the data series, and the second dimension is a numpy array that keeps the actual data
-    all_rows = [sheet_data.row_values(i+1) for i in range(noRuns)]
+    all_rows = df_data.values.tolist()
     
     # Vectorized separation of labels and data
     labels = [row[0] for row in all_rows]
@@ -63,9 +66,9 @@ def import_data(inputFileName, withClusters = False):
     
     if withClusters:
         try:
-            sheet_clusters = book.sheet_by_name('clusters')
-            clusters_original = [sheet_clusters.cell(i+1, 1).value for i in range(noRuns)]
-        except XLRDError:
+            df_clusters = pd.read_excel(file_path, sheet_name='clusters')
+            clusters_original = df_clusters.iloc[:, 0].tolist()
+        except:
             clusters_original = ['NA'] * noRuns
         return data_w_desc, clusters_original 
     else:
@@ -78,12 +81,13 @@ def import_all_files():
     full_data = pd.concat(dataframes, ignore_index=True)
     return full_data
 
-
 def import_all(name):
     relPathFileFolder = '../datasets'
     inputFileName='Dataset_Basic_'+name
-    book = open_workbook(relPathFileFolder+'/'+inputFileName+'.xlsx')
-    names = book.sheet_names()
+    file_path = relPathFileFolder+'/'+inputFileName+'.xlsx'
+    # Read all sheet names using pandas
+    excel_file = pd.ExcelFile(file_path)
+    names = excel_file.sheet_names
     dataframes = [import_pandas_data(name, n) for n in names]
     complete_data = pd.concat(dataframes, ignore_index=True)
     complete_data['Source'] = name
@@ -93,22 +97,68 @@ def import_all(name):
 def import_pandas_data(name, cls):
     relPathFileFolder = '../datasets'
     inputFileName='Dataset_Basic_'+name
-    book = open_workbook(relPathFileFolder+'/'+inputFileName+'.xlsx')
-    sheet_data=book.sheet_by_name(cls)
-    noRuns = sheet_data.nrows-1
+    file_path = relPathFileFolder+'/'+inputFileName+'.xlsx'
+    df_data = pd.read_excel(file_path, sheet_name=cls)
     
-    data = [sheet_data.row_values(i+1) for i in range(noRuns)]
+    data = df_data.values.tolist()
     data = pd.DataFrame(np.array(data))
     data = data.rename(columns = {0:'Id'})
     data["Class"] = cls
     
     return data
 
+def import_from_pysd(model_name, parameter_set, output_variable, models_folder='vensim models'):
+    """
+    Import a model from pysd and run it with a given parameter set.
+    :param model_name: The name of the model to import
+    :param parameter_set: A dictionary of parameters, where keys are the parameter names and values are the parameter values or a list of parameter values
+    :param output_variable: The name of the output variable to extract from simulation results
+    :param models_folder: The folder containing the Vensim models (default: 'models')
+    :return: A list of tuples in the same format as import_data: [(description, time_series_data), ...]
+    """
+    possible_paths = [models_folder, '../' + models_folder, 'vensim_models', '../vensim_models']
+    model_path = None
+    
+    for rel_path in possible_paths:
+        test_path = os.path.join(rel_path, model_name + '.mdl')
+        if os.path.exists(test_path):
+            model_path = test_path
+            break
+
+    if model_path is None:
+        model_path = model_name + '.mdl'
+        if not os.path.exists(model_path):
+            raise FileNotFoundError(f"Could not find {model_name}.mdl.")
+
+    sd_model = pysd.read_vensim(model_path)
+    param_names = list(parameter_set.keys())
+    param_values = []
+
+    for key in param_names:
+        value = parameter_set[key]
+        if not isinstance(value, (list, tuple)):
+            param_values.append([value])
+        else:
+            param_values.append(value)
+
+    param_combinations = list(itertools.product(*param_values))
+    
+    results = []
+
+    for combination in param_combinations:
+        current_params = dict(zip(param_names, combination))
+        simulation_results = sd_model.run(params=current_params)
+        time_series_data = simulation_results[output_variable].values
+        description = ', '.join([f"{name}={value}" for name, value in current_params.items()])
+        results.append((description, time_series_data))
+    
+    return results
+
 
 def normalize_data(data_w_labels):
     '''
     Compute the normalized version of the time-series data such that
-    y_i = x_i - min(x) / (max(x) - min(x))
+    y_i = (x_i - min(x)) / (max(x) - min(x))
     :param data: 1-D or 2-D numpy ndarray, where the first column has description information
     :returns: ndarray, Normalized input data
     '''
@@ -117,7 +167,11 @@ def normalize_data(data_w_labels):
     
     mins = np.min(data_arrays, axis=1, keepdims=True)
     maxs = np.max(data_arrays, axis=1, keepdims=True)
-    normalized_arrays = (data_arrays - mins) / (maxs - mins)
+    
+    # Prevent division by zero for constant time series
+    ranges = maxs - mins
+    ranges[ranges == 0] = 1
+    normalized_arrays = (data_arrays - mins) / ranges
     
     result = [[item[0], normalized_arrays[i]] for i, item in enumerate(data_w_labels)]
     
@@ -127,7 +181,7 @@ def normalize_data(data_w_labels):
 def standardize_data(data_w_labels):
     '''
     Compute the standardized version of the time-series data such that
-    y_i = x_i - mean(x) / std(x)
+    y_i = (x_i - mean(x)) / std(x)
     :param data: 1-D or 2-D numpy ndarray, where the first column has description information
     :returns: ndarray, Standardized input data
     '''
@@ -136,6 +190,9 @@ def standardize_data(data_w_labels):
 
     means = np.mean(data_arrays, axis=1, keepdims=True)
     stds = np.std(data_arrays, axis=1, keepdims=True)
+    
+    # Prevent division by zero for constant time series
+    stds[stds == 0] = 1
     standardized_arrays = (data_arrays - means) / stds
 
     result = [[item[0], standardized_arrays[i]] for i, item in enumerate(data_w_labels)]
@@ -182,7 +239,6 @@ def cluster(data_w_labels,  distance='pattern', interClusterDistance='complete',
                           change__in_the_slope/average_value_of_the_slope < 
                           threshold, consider curvature = 0) (for bmd distance)
     * 'no of sisters': 50 (for pattern distance)
-
     '''
     # Construct a list that includes only the data part. Gets rid of the label string in dataSet[i][0]
     data_wo_labels = [item[1] for item in data_w_labels]
@@ -281,28 +337,24 @@ def construct_distances(data_wo_labels, distance='pattern', **kwargs):
     try:
         return distance_functions[distance](data_wo_labels, **kwargs)
     except KeyError:
-        log.error('Unknown distance is used')
-        print ('Unknown distance is used')
-        raise
+        print(f'Unknown distance "{distance}" is used.')
+        raise ValueError(f'Unknown distance: {distance}')
 
-        
+
 def flatcluster(dRow, data, interClusterDistance='complete', plotDendrogram=True, cMethod='inconsistent', cValue=2.5):
-    z = linkage(dRow, interClusterDistance)
+    z = linkage(dRow, method=interClusterDistance)
     
     if plotDendrogram:
         plotdendrogram(z)
     
-    clusters = fcluster(z, cValue, cMethod)
-    
-    noClusters = max(clusters)
-    
-    #unique_clusters, cluster_counts = np.unique(clusters, return_counts=True)
-    #print('Total number of clusters:', noClusters)
-    #for cluster_id, count in zip(unique_clusters, cluster_counts):
-    #    print("Cluster", cluster_id, ":", count)
-    
-    global clusterCount
-    clusterCount = noClusters
+    clusters = fcluster(z, t=cValue, criterion=cMethod)
+        
+    # Debug information to show clustering results
+    # unique_clusters, cluster_counts = np.unique(clusters, return_counts=True)
+    # print('Total number of clusters:', noClusters)
+    # print('Clustering method:', cMethod, 'with value:', cValue)
+    # for cluster_id, count in zip(unique_clusters, cluster_counts):
+    #     print(f"Cluster {cluster_id}: {count} members")
     
     cluster_strings = [str(cluster_id) for cluster_id in clusters]
     for i, log in enumerate(data):
@@ -332,7 +384,7 @@ def plot_clusters(cluster_list, dist, mode='show',fname='results'):
     main_fig.canvas.manager.set_window_title(dist + ' distance')
     no_plots = len(cluster_list)
     no_cols = 4
-    no_rows = int(np.math.ceil(float(no_plots) / no_cols))
+    no_rows = int(math.ceil(float(no_plots) / no_cols))
     i = 1
     
     for clust in cluster_list:
@@ -346,7 +398,7 @@ def plot_clusters(cluster_list, dist, mode='show',fname='results'):
         #=======================================================================
          
         for j in clust.members:
-            t = np.array(range(j[1].shape[0]))
+            t = np.arange(j[1].shape[0])
             sub_plot.plot(t, j[1], linewidth=2)
         
         plt.title('Cluster no: ' + str(clust.no), weight='bold')
@@ -370,11 +422,14 @@ def compare_clusterings(clusters1, clusters2):
     
     if len(clusters1) != len(clusters2):
         print("Number of members of these two clusterings are not equal")
-        return 0
+        return 0, 0
 
     if not isinstance(clusters1, np.ndarray):
         c1 = np.array(clusters1)
         c2 = np.array(clusters2)
+    else:
+        c1 = clusters1
+        c2 = clusters2
 
     n = len(c1)
     c1_matrix = c1[:, np.newaxis] == c1[np.newaxis, :]
@@ -398,15 +453,8 @@ def compare_clusterings(clusters1, clusters2):
     return rand_index, jackard_index
 
 
-def experiment_controller(inputFileName,
-                          distanceMethod='pattern',
-                          flatMethod='complete',
-                          transform='original',
-                          cMethod='maxclust',
-                          cValue= 9,
-                          replicate=1,
-                          note='',
-                          plot=True):
+def experiment_controller(inputFileName, distanceMethod='pattern', flatMethod='complete', transform='original',
+                          cMethod='maxclust', cValue= 9, replicate=1, note='', plot=True):
     """
     distanceMethod alternatives: manhattan, mse, pattern, sse, triangle
     flatMethod alternatives: 
@@ -459,7 +507,8 @@ def experiment_controller(inputFileName,
 
     noClusters = max(clusters)
     outputFileName = '{0}-{1}-{2}-{3}.xlsx'.format(distanceMethod,flatMethod,transform,note)
-    path_adjust = os.path.join(os.getcwd(),'..','output')
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    path_adjust = os.path.join(script_dir, '..', 'output')
     
     w = xlsxwriter.Workbook(os.path.join(path_adjust, outputFileName))
     ws = w.add_worksheet('results')
@@ -526,7 +575,6 @@ def experiment_controller(inputFileName,
     if plot==True:
         plot_clusters(cluster_list, distanceMethod, mode='save', fname=os.path.join(path_adjust, os.path.splitext(outputFileName)[0]))
 
-
 class Cluster(object):
     '''
     Contains information about a data-series cluster, as well as some methods to help analyzing a cluster.
@@ -545,15 +593,25 @@ class Cluster(object):
         self.size = self.indices.size
         self.members = member_dss
 
-    def error(self):
-        return self.sample
 
-
-'''
-The main method where the user needs to specify the path to the simulation results
-'''
 if __name__ == '__main__':
     inputFileName = 'TestSet_wo_Osc'
 
-    experiment_controller(inputFileName, distanceMethod='pattern_dtw', flatMethod='complete',
-           transform='normalize', cMethod='maxclust', note="wSLope=6", cValue=9, replicate=1)
+    #experiment_controller(inputFileName, distanceMethod='pattern_dtw', flatMethod='complete',
+    #       transform='normalize', cMethod='maxclust', note="wSLope=6", cValue=9, replicate=1)
+
+    data_set = import_data(inputFileName)
+
+    #results = cluster(data_set, distance='manhattan')
+    #results = cluster(data_set, cValue=10000, distance='manhattan', cMethod='distance')
+    results = cluster(data_set, cValue=10, cMethod='maxclust', plotDendrogram=True)
+
+    print('Distances:', results[0])
+    print('Number of members in each cluster:', [results[1][i].size for i in range(len(results[1]))])
+    print('Clusters:', results[2])
+
+    plot_clusters(results[1], 'pattern', mode='show')
+
+    #vensim_result_data = import_from_pysd(model_name = 'constantflow', parameter_set = {'constant flow value':[5, 10, 20]}, output_variable = 'OI')
+    #vensim_result = cluster(vensim_result_data, cValue=2, cMethod='maxclust')
+    #print('Vensim result:', vensim_result) Returns 1, 1, 1
