@@ -1,0 +1,1167 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>simclstr.plotting &mdash; Simclstr 0.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=01f34227"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Simclstr
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Library Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/clusterer.html">Main Clustering Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/plotting.html">Plotting Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/experiment_controller.html">Experiment Controller</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Examples and Tutorials:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../pysd/pysd_notebook.html">PySD Integration Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../basicA/basicA_notebook.html">BasicA Instance Example</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Simclstr</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">simclstr.plotting</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for simclstr.plotting</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Plotting utilities for clustering results.</span>
+
+<span class="sd">This module provides functions for visualizing clustering results including</span>
+<span class="sd">dendrograms and cluster plots using Plotly for better performance.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">TYPE_CHECKING</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.cluster.hierarchy</span><span class="w"> </span><span class="kn">import</span> <span class="n">dendrogram</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">plotly.graph_objects</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">go</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">plotly.subplots</span><span class="w"> </span><span class="kn">import</span> <span class="n">make_subplots</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">plotly.express</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">px</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">dash</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dash</span><span class="w"> </span><span class="kn">import</span> <span class="n">dcc</span><span class="p">,</span> <span class="n">html</span><span class="p">,</span> <span class="n">Input</span><span class="p">,</span> <span class="n">Output</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">webbrowser</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">threading</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.clusterer</span><span class="w"> </span><span class="kn">import</span> <span class="n">Cluster</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_plot_dendrogram</span><span class="p">(</span><span class="n">z</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Plot hierarchical clustering dendrogram using matplotlib.</span>
+<span class="sd">    </span>
+<span class="sd">    This function visualizes the hierarchical clustering structure as a dendrogram,</span>
+<span class="sd">    showing how clusters are formed at different distances.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    z : np.ndarray</span>
+<span class="sd">        Linkage matrix returned by scipy.cluster.hierarchy.linkage.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">dendrogram</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">truncate_mode</span><span class="o">=</span><span class="s1">&#39;lastp&#39;</span><span class="p">,</span> <span class="n">show_leaf_counts</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">show_contracted</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+
+<div class="viewcode-block" id="plot_clusters">
+<a class="viewcode-back" href="../../api/plotting.html#simclstr.plotting.plot_clusters">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">plot_clusters</span><span class="p">(</span><span class="n">cluster_list</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="s2">&quot;Cluster&quot;</span><span class="p">],</span> <span class="n">dist</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;show&#39;</span><span class="p">,</span> <span class="n">fname</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;results&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Plot cluster members on separate subplots using matplotlib.</span>
+
+<span class="sd">    This function creates a grid of subplots where each subplot shows all time series</span>
+<span class="sd">    belonging to a specific cluster. Each cluster is displayed in its own subplot</span>
+<span class="sd">    with all member time series overlaid.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    cluster_list : List[Cluster]</span>
+<span class="sd">        List of Cluster objects containing clustered time series data.</span>
+<span class="sd">    dist : str</span>
+<span class="sd">        Distance metric name used for clustering. This will be displayed in the</span>
+<span class="sd">        window title and can help identify which distance method was used.</span>
+<span class="sd">    mode : str, default=&#39;show&#39;</span>
+<span class="sd">        Display mode for the plot:</span>
+<span class="sd">        </span>
+<span class="sd">        - &#39;show&#39;: Display the plot interactively using matplotlib.pyplot.show()</span>
+<span class="sd">        - &#39;save&#39;: Save the plot to a PNG file without displaying it</span>
+<span class="sd">        </span>
+<span class="sd">    fname : str, default=&#39;results&#39;</span>
+<span class="sd">        Base filename for saving the plot (without extension). Only used when</span>
+<span class="sd">        mode=&#39;save&#39;. The file will be saved as &#39;{fname}.png&#39;.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">main_fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">14</span><span class="p">,</span><span class="mi">10</span><span class="p">))</span>
+    <span class="n">main_fig</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">set_window_title</span><span class="p">(</span><span class="n">dist</span> <span class="o">+</span> <span class="s1">&#39; distance&#39;</span><span class="p">)</span>
+    <span class="n">no_plots</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">cluster_list</span><span class="p">)</span>
+    <span class="n">no_cols</span> <span class="o">=</span> <span class="mi">4</span>
+    <span class="n">no_rows</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">no_plots</span><span class="p">)</span> <span class="o">/</span> <span class="n">no_cols</span><span class="p">))</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="mi">1</span>
+    
+    <span class="k">for</span> <span class="n">clust</span> <span class="ow">in</span> <span class="n">cluster_list</span><span class="p">:</span>
+        <span class="n">sub_plot</span> <span class="o">=</span> <span class="n">main_fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="n">no_rows</span><span class="p">,</span> <span class="n">no_cols</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span>
+
+        <span class="k">for</span> <span class="n">each_ts</span> <span class="ow">in</span> <span class="n">clust</span><span class="o">.</span><span class="n">list_of_members</span><span class="p">:</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">each_ts</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">sub_plot</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">each_ts</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        
+        <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Cluster no: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">clust</span><span class="o">.</span><span class="n">cluster_id</span><span class="p">),</span> <span class="n">weight</span><span class="o">=</span><span class="s1">&#39;bold&#39;</span><span class="p">)</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">mode</span><span class="o">==</span><span class="s1">&#39;show&#39;</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+    <span class="k">elif</span> <span class="n">mode</span><span class="o">==</span><span class="s1">&#39;save&#39;</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{0}</span><span class="s1">.png&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">fname</span><span class="p">))</span></div>
+
+
+
+<div class="viewcode-block" id="interactive_plot_clusters">
+<a class="viewcode-back" href="../../api/plotting.html#simclstr.plotting.interactive_plot_clusters">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">interactive_plot_clusters</span><span class="p">(</span><span class="n">cluster_list</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="s2">&quot;Cluster&quot;</span><span class="p">],</span> <span class="n">dist</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">no_cols</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="n">port</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">8050</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create an interactive plot of cluster members.</span>
+
+<span class="sd">    When you click on a time series, information about that time series and its cluster will appear in the information panel.</span>
+
+<span class="sd">    Press Ctrl+C to stop the server.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    cluster_list : List[Cluster]</span>
+<span class="sd">        List of Cluster objects containing clustered time series data.</span>
+<span class="sd">    dist : str</span>
+<span class="sd">        Distance metric name used for clustering.</span>
+<span class="sd">    no_cols : int, default=3</span>
+<span class="sd">        Number of columns in the plot.</span>
+<span class="sd">    port : int, default=8050</span>
+<span class="sd">        Port number for the Dash server.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">app</span> <span class="o">=</span> <span class="n">dash</span><span class="o">.</span><span class="n">Dash</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">title</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Interactive Clustering - </span><span class="si">{</span><span class="n">dist</span><span class="si">}</span><span class="s2">&quot;</span>
+    
+    <span class="n">no_plots</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">cluster_list</span><span class="p">)</span>
+    <span class="n">no_cols</span> <span class="o">=</span> <span class="n">no_cols</span>
+    <span class="n">cluster_rows</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">no_plots</span><span class="p">)</span> <span class="o">/</span> <span class="n">no_cols</span><span class="p">))</span>
+    
+    <span class="n">colors</span> <span class="o">=</span> <span class="n">px</span><span class="o">.</span><span class="n">colors</span><span class="o">.</span><span class="n">qualitative</span><span class="o">.</span><span class="n">Set1</span> <span class="o">+</span> <span class="n">px</span><span class="o">.</span><span class="n">colors</span><span class="o">.</span><span class="n">qualitative</span><span class="o">.</span><span class="n">Set2</span> <span class="o">+</span> <span class="n">px</span><span class="o">.</span><span class="n">colors</span><span class="o">.</span><span class="n">qualitative</span><span class="o">.</span><span class="n">Set3</span>
+    
+    <span class="n">cluster_fig</span> <span class="o">=</span> <span class="n">make_subplots</span><span class="p">(</span>
+        <span class="n">rows</span><span class="o">=</span><span class="n">cluster_rows</span><span class="p">,</span> 
+        <span class="n">cols</span><span class="o">=</span><span class="n">no_cols</span><span class="p">,</span>
+        <span class="n">subplot_titles</span><span class="o">=</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;Cluster </span><span class="si">{</span><span class="n">clust</span><span class="o">.</span><span class="n">cluster_id</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">clust</span> <span class="ow">in</span> <span class="n">cluster_list</span><span class="p">],</span>
+        <span class="n">vertical_spacing</span><span class="o">=</span><span class="mf">0.12</span><span class="p">,</span>
+        <span class="n">horizontal_spacing</span><span class="o">=</span><span class="mf">0.04</span>
+    <span class="p">)</span>
+    
+    <span class="n">cluster_data</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">time_series_data</span> <span class="o">=</span> <span class="p">{}</span>
+    
+    <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">clust</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">cluster_list</span><span class="p">):</span>
+        <span class="n">row</span> <span class="o">=</span> <span class="p">(</span><span class="n">idx</span> <span class="o">//</span> <span class="n">no_cols</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">col</span> <span class="o">=</span> <span class="p">(</span><span class="n">idx</span> <span class="o">%</span> <span class="n">no_cols</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+
+        <span class="n">cluster_data</span><span class="p">[</span><span class="n">clust</span><span class="o">.</span><span class="n">cluster_id</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;cluster_id&#39;</span><span class="p">:</span> <span class="n">clust</span><span class="o">.</span><span class="n">cluster_id</span><span class="p">,</span>
+            <span class="s1">&#39;number_of_members&#39;</span><span class="p">:</span> <span class="n">clust</span><span class="o">.</span><span class="n">number_of_members</span><span class="p">,</span>
+            <span class="s1">&#39;indices_of_members&#39;</span><span class="p">:</span> <span class="n">clust</span><span class="o">.</span><span class="n">indices_of_members</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+            <span class="s1">&#39;best_representative_member&#39;</span><span class="p">:</span> <span class="n">clust</span><span class="o">.</span><span class="n">best_representative_member</span><span class="o">.</span><span class="n">label</span><span class="p">,</span>
+            <span class="s1">&#39;labels_of_members&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">member</span><span class="o">.</span><span class="n">label</span> <span class="k">for</span> <span class="n">member</span> <span class="ow">in</span> <span class="n">clust</span><span class="o">.</span><span class="n">list_of_members</span><span class="p">]</span>
+        <span class="p">}</span>
+        
+        <span class="k">for</span> <span class="n">j_idx</span><span class="p">,</span> <span class="n">each_ts</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">clust</span><span class="o">.</span><span class="n">list_of_members</span><span class="p">):</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">each_ts</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+            <span class="n">ts_id</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;cluster_</span><span class="si">{</span><span class="n">clust</span><span class="o">.</span><span class="n">cluster_id</span><span class="si">}</span><span class="s2">_ts_</span><span class="si">{</span><span class="n">j_idx</span><span class="si">}</span><span class="s2">&quot;</span>
+
+            <span class="n">is_repr</span> <span class="o">=</span> <span class="n">each_ts</span><span class="o">.</span><span class="n">label</span> <span class="o">==</span> <span class="n">clust</span><span class="o">.</span><span class="n">best_representative_member</span><span class="o">.</span><span class="n">label</span>
+
+            <span class="n">time_series_data</span><span class="p">[</span><span class="n">ts_id</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">each_ts</span><span class="o">.</span><span class="n">label</span><span class="p">,</span>
+                <span class="s1">&#39;cluster_id&#39;</span><span class="p">:</span> <span class="n">clust</span><span class="o">.</span><span class="n">cluster_id</span><span class="p">,</span>
+                <span class="s1">&#39;length&#39;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">each_ts</span><span class="o">.</span><span class="n">data</span><span class="p">),</span>
+                <span class="s1">&#39;mean&#39;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">each_ts</span><span class="o">.</span><span class="n">data</span><span class="p">)),</span>
+                <span class="s1">&#39;std&#39;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">each_ts</span><span class="o">.</span><span class="n">data</span><span class="p">)),</span>
+                <span class="s1">&#39;min&#39;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">each_ts</span><span class="o">.</span><span class="n">data</span><span class="p">)),</span>
+                <span class="s1">&#39;max&#39;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">each_ts</span><span class="o">.</span><span class="n">data</span><span class="p">)),</span>
+                <span class="s1">&#39;is_representative&#39;</span><span class="p">:</span> <span class="n">is_repr</span><span class="p">,</span>
+                <span class="s1">&#39;data&#39;</span><span class="p">:</span> <span class="n">each_ts</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+            <span class="p">}</span>
+            
+            <span class="n">line_color</span> <span class="o">=</span> <span class="s1">&#39;#e74c3c&#39;</span> <span class="k">if</span> <span class="n">is_repr</span> <span class="k">else</span> <span class="n">colors</span><span class="p">[</span><span class="n">j_idx</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">colors</span><span class="p">)]</span>
+            <span class="n">line_width</span> <span class="o">=</span> <span class="mi">2</span>
+            <span class="n">opacity</span> <span class="o">=</span> <span class="mf">0.8</span>
+            
+            <span class="n">cluster_fig</span><span class="o">.</span><span class="n">add_trace</span><span class="p">(</span>
+                <span class="n">go</span><span class="o">.</span><span class="n">Scatter</span><span class="p">(</span>
+                    <span class="n">x</span><span class="o">=</span><span class="n">t</span><span class="p">,</span>
+                    <span class="n">y</span><span class="o">=</span><span class="n">each_ts</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
+                    <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;lines&#39;</span><span class="p">,</span>
+                    <span class="n">name</span><span class="o">=</span><span class="n">each_ts</span><span class="o">.</span><span class="n">label</span><span class="p">,</span>
+                    <span class="n">line</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">width</span><span class="o">=</span><span class="n">line_width</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">line_color</span><span class="p">),</span>
+                    <span class="n">opacity</span><span class="o">=</span><span class="n">opacity</span><span class="p">,</span>
+                    <span class="n">customdata</span><span class="o">=</span><span class="p">[</span><span class="n">ts_id</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="p">),</span>
+                    <span class="n">hovertemplate</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;&lt;b&gt;</span><span class="si">{</span><span class="n">each_ts</span><span class="o">.</span><span class="n">label</span><span class="si">}</span><span class="s2">&lt;/b&gt;&lt;br&gt;&quot;</span> <span class="o">+</span>
+                                <span class="s2">&quot;Time: %</span><span class="si">{x}</span><span class="s2">&lt;br&gt;&quot;</span> <span class="o">+</span>
+                                <span class="s2">&quot;Value: %</span><span class="si">{y:.3f}</span><span class="s2">&lt;br&gt;&quot;</span> <span class="o">+</span>
+                                <span class="sa">f</span><span class="s2">&quot;Cluster: </span><span class="si">{</span><span class="n">clust</span><span class="o">.</span><span class="n">cluster_id</span><span class="si">}</span><span class="s2">&lt;br&gt;&quot;</span> <span class="o">+</span>
+                                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="s1">&#39;Representative&#39;</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">is_repr</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">&#39;&#39;</span><span class="si">}</span><span class="s2">&lt;br&gt;&quot;</span> <span class="o">+</span>
+                                <span class="s2">&quot;&lt;extra&gt;&lt;/extra&gt;&quot;</span><span class="p">,</span>
+                    <span class="n">showlegend</span><span class="o">=</span><span class="kc">False</span>
+                <span class="p">),</span>
+                <span class="n">row</span><span class="o">=</span><span class="n">row</span><span class="p">,</span> <span class="n">col</span><span class="o">=</span><span class="n">col</span>
+            <span class="p">)</span>
+    
+    <span class="n">cluster_fig</span><span class="o">.</span><span class="n">update_layout</span><span class="p">(</span>
+        <span class="n">height</span><span class="o">=</span><span class="mi">280</span> <span class="o">*</span> <span class="n">cluster_rows</span><span class="p">,</span>
+        <span class="n">showlegend</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">clickmode</span><span class="o">=</span><span class="s1">&#39;event+select&#39;</span><span class="p">,</span>
+        <span class="n">plot_bgcolor</span><span class="o">=</span><span class="s1">&#39;#f8f9fa&#39;</span><span class="p">,</span>
+        <span class="n">paper_bgcolor</span><span class="o">=</span><span class="s1">&#39;#f8f9fa&#39;</span><span class="p">,</span>
+        <span class="n">font</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;family&#39;</span><span class="p">:</span> <span class="s1">&#39;Arial, sans-serif&#39;</span><span class="p">}</span>
+    <span class="p">)</span>
+    
+    <span class="n">cluster_fig</span><span class="o">.</span><span class="n">update_annotations</span><span class="p">(</span><span class="n">font_size</span><span class="o">=</span><span class="mi">18</span><span class="p">,</span> <span class="n">font_color</span><span class="o">=</span><span class="s1">&#39;#1a202c&#39;</span><span class="p">,</span> <span class="n">font</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">weight</span><span class="o">=</span><span class="s1">&#39;bold&#39;</span><span class="p">))</span>
+    
+    <span class="n">info_panel_height</span> <span class="o">=</span> <span class="mi">160</span>
+    
+    <span class="n">app</span><span class="o">.</span><span class="n">layout</span> <span class="o">=</span> <span class="n">html</span><span class="o">.</span><span class="n">Div</span><span class="p">([</span>
+        <span class="n">html</span><span class="o">.</span><span class="n">Div</span><span class="p">([</span>
+            <span class="n">html</span><span class="o">.</span><span class="n">H1</span><span class="p">([</span>
+                <span class="sa">f</span><span class="s2">&quot;Interactive Clustering - </span><span class="si">{</span><span class="n">dist</span><span class="si">}</span><span class="s2"> distance&quot;</span>
+            <span class="p">],</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span>
+                <span class="s1">&#39;textAlign&#39;</span><span class="p">:</span> <span class="s1">&#39;center&#39;</span><span class="p">,</span> 
+                <span class="s1">&#39;marginBottom&#39;</span><span class="p">:</span> <span class="s1">&#39;4px&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;#1a202c&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;fontFamily&#39;</span><span class="p">:</span> <span class="s1">&#39;Arial, sans-serif&#39;</span>
+            <span class="p">})</span>
+        <span class="p">]),</span>
+        
+        <span class="n">html</span><span class="o">.</span><span class="n">Div</span><span class="p">([</span>
+            <span class="n">dcc</span><span class="o">.</span><span class="n">Graph</span><span class="p">(</span>
+                <span class="nb">id</span><span class="o">=</span><span class="s1">&#39;cluster-plot&#39;</span><span class="p">,</span>
+                <span class="n">figure</span><span class="o">=</span><span class="n">cluster_fig</span><span class="p">,</span>
+                <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;marginBottom&#39;</span><span class="p">:</span> <span class="s1">&#39;2px&#39;</span><span class="p">}</span>
+            <span class="p">)</span>
+        <span class="p">],</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;marginTop&#39;</span><span class="p">:</span> <span class="s1">&#39;0px&#39;</span><span class="p">}),</span>
+        
+        <span class="n">html</span><span class="o">.</span><span class="n">Div</span><span class="p">([</span>
+            <span class="n">html</span><span class="o">.</span><span class="n">Div</span><span class="p">([</span>
+                <span class="n">html</span><span class="o">.</span><span class="n">Div</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s1">&#39;info-panel&#39;</span><span class="p">,</span> <span class="n">children</span><span class="o">=</span><span class="p">[])</span>
+            <span class="p">],</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span>
+                <span class="s1">&#39;backgroundColor&#39;</span><span class="p">:</span> <span class="s1">&#39;#ffffff&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;border&#39;</span><span class="p">:</span> <span class="s1">&#39;1px solid #e2e8f0&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;borderRadius&#39;</span><span class="p">:</span> <span class="s1">&#39;16px&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;padding&#39;</span><span class="p">:</span> <span class="s1">&#39;18px&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;margin&#39;</span><span class="p">:</span> <span class="s1">&#39;4px auto&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;width&#39;</span><span class="p">:</span> <span class="s1">&#39;calc(100% - 160px)&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;boxShadow&#39;</span><span class="p">:</span> <span class="s1">&#39;0 10px 25px rgba(0, 0, 0, 0.08)&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;minHeight&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">info_panel_height</span><span class="si">}</span><span class="s1">px&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;maxHeight&#39;</span><span class="p">:</span> <span class="s1">&#39;none&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;overflow&#39;</span><span class="p">:</span> <span class="s1">&#39;visible&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;boxSizing&#39;</span><span class="p">:</span> <span class="s1">&#39;border-box&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;resize&#39;</span><span class="p">:</span> <span class="s1">&#39;both&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;overflowY&#39;</span><span class="p">:</span> <span class="s1">&#39;visible&#39;</span>
+            <span class="p">})</span>
+        <span class="p">])</span>
+    <span class="p">],</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span>
+        <span class="s1">&#39;backgroundColor&#39;</span><span class="p">:</span> <span class="s1">&#39;#f8f9fa&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;minHeight&#39;</span><span class="p">:</span> <span class="s1">&#39;100vh&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;padding&#39;</span><span class="p">:</span> <span class="s1">&#39;15px&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;fontFamily&#39;</span><span class="p">:</span> <span class="s1">&#39;Arial, sans-serif&#39;</span>
+    <span class="p">})</span>
+    
+    <span class="nd">@app</span><span class="o">.</span><span class="n">callback</span><span class="p">(</span>
+        <span class="n">Output</span><span class="p">(</span><span class="s1">&#39;info-panel&#39;</span><span class="p">,</span> <span class="s1">&#39;children&#39;</span><span class="p">),</span>
+        <span class="p">[</span><span class="n">Input</span><span class="p">(</span><span class="s1">&#39;cluster-plot&#39;</span><span class="p">,</span> <span class="s1">&#39;clickData&#39;</span><span class="p">)]</span>
+    <span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_info_panel</span><span class="p">(</span><span class="n">clickData</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">clickData</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span>
+                <span class="n">html</span><span class="o">.</span><span class="n">H2</span><span class="p">([</span>
+                    <span class="s2">&quot;Information Panel&quot;</span>
+                <span class="p">],</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;textAlign&#39;</span><span class="p">:</span> <span class="s1">&#39;center&#39;</span><span class="p">,</span> <span class="s1">&#39;marginBottom&#39;</span><span class="p">:</span> <span class="s1">&#39;20px&#39;</span><span class="p">,</span> <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;#1a202c&#39;</span><span class="p">}),</span>
+                <span class="n">html</span><span class="o">.</span><span class="n">Div</span><span class="p">([</span>
+                    <span class="n">html</span><span class="o">.</span><span class="n">Div</span><span class="p">([</span>
+                        <span class="n">html</span><span class="o">.</span><span class="n">P</span><span class="p">([</span>
+                            <span class="n">html</span><span class="o">.</span><span class="n">B</span><span class="p">(</span><span class="s2">&quot;Representative members&quot;</span><span class="p">),</span> <span class="s2">&quot; are highlighted in &quot;</span><span class="p">,</span> 
+                            <span class="n">html</span><span class="o">.</span><span class="n">Span</span><span class="p">(</span><span class="s2">&quot;red&quot;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;#e74c3c&#39;</span><span class="p">,</span> <span class="s1">&#39;fontWeight&#39;</span><span class="p">:</span> <span class="s1">&#39;bold&#39;</span><span class="p">})</span>
+                        <span class="p">],</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;textAlign&#39;</span><span class="p">:</span> <span class="s1">&#39;center&#39;</span><span class="p">,</span> <span class="s1">&#39;fontSize&#39;</span><span class="p">:</span> <span class="s1">&#39;16px&#39;</span><span class="p">}),</span>
+                        <span class="n">html</span><span class="o">.</span><span class="n">P</span><span class="p">(</span><span class="s2">&quot;Click on any time series line to see detailed statistics&quot;</span><span class="p">,</span> 
+                               <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;textAlign&#39;</span><span class="p">:</span> <span class="s1">&#39;center&#39;</span><span class="p">,</span> <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;#7f8c8d&#39;</span><span class="p">})</span>
+                    <span class="p">],</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span>
+                        <span class="s1">&#39;padding&#39;</span><span class="p">:</span> <span class="s1">&#39;36px&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;backgroundColor&#39;</span><span class="p">:</span> <span class="s1">&#39;#ffffff&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;borderRadius&#39;</span><span class="p">:</span> <span class="s1">&#39;12px&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;textAlign&#39;</span><span class="p">:</span> <span class="s1">&#39;center&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;border&#39;</span><span class="p">:</span> <span class="s1">&#39;1px solid #e2e8f0&#39;</span>
+                    <span class="p">})</span>
+                <span class="p">],</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;display&#39;</span><span class="p">:</span> <span class="s1">&#39;flex&#39;</span><span class="p">,</span> <span class="s1">&#39;justifyContent&#39;</span><span class="p">:</span> <span class="s1">&#39;center&#39;</span><span class="p">,</span> <span class="s1">&#39;alignItems&#39;</span><span class="p">:</span> <span class="s1">&#39;center&#39;</span><span class="p">,</span> <span class="s1">&#39;height&#39;</span><span class="p">:</span> <span class="s1">&#39;100%&#39;</span><span class="p">})</span>
+            <span class="p">]</span>
+        
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">point</span> <span class="o">=</span> <span class="n">clickData</span><span class="p">[</span><span class="s1">&#39;points&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">customdata</span> <span class="o">=</span> <span class="n">point</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;customdata&#39;</span><span class="p">)</span>
+            
+            <span class="k">if</span> <span class="n">customdata</span> <span class="ow">and</span> <span class="n">customdata</span> <span class="ow">in</span> <span class="n">time_series_data</span><span class="p">:</span>
+                <span class="n">ts_info</span> <span class="o">=</span> <span class="n">time_series_data</span><span class="p">[</span><span class="n">customdata</span><span class="p">]</span>
+                <span class="n">cluster_info</span> <span class="o">=</span> <span class="n">cluster_data</span><span class="p">[</span><span class="n">ts_info</span><span class="p">[</span><span class="s1">&#39;cluster_id&#39;</span><span class="p">]]</span>
+                
+                <span class="k">return</span> <span class="p">[</span><span class="n">html</span><span class="o">.</span><span class="n">Div</span><span class="p">([</span>
+                    <span class="n">html</span><span class="o">.</span><span class="n">Div</span><span class="p">([</span>
+                        <span class="c1"># Left column</span>
+                        <span class="n">html</span><span class="o">.</span><span class="n">Div</span><span class="p">([</span>
+                            <span class="n">html</span><span class="o">.</span><span class="n">Div</span><span class="p">([</span>
+                                <span class="n">html</span><span class="o">.</span><span class="n">Span</span><span class="p">(</span><span class="s2">&quot;Time Series Information&quot;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;fontWeight&#39;</span><span class="p">:</span> <span class="s1">&#39;bold&#39;</span><span class="p">,</span> <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;#34495e&#39;</span><span class="p">,</span> <span class="s1">&#39;fontSize&#39;</span><span class="p">:</span> <span class="s1">&#39;16px&#39;</span><span class="p">})</span>
+                            <span class="p">],</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;marginBottom&#39;</span><span class="p">:</span> <span class="s1">&#39;15px&#39;</span><span class="p">,</span> <span class="s1">&#39;overflow&#39;</span><span class="p">:</span> <span class="s1">&#39;hidden&#39;</span><span class="p">}),</span>
+                            <span class="n">html</span><span class="o">.</span><span class="n">Div</span><span class="p">([</span>
+                                <span class="n">html</span><span class="o">.</span><span class="n">Span</span><span class="p">(</span><span class="s2">&quot;Label:&quot;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;fontWeight&#39;</span><span class="p">:</span> <span class="s1">&#39;bold&#39;</span><span class="p">,</span> <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;#34495e&#39;</span><span class="p">,</span> <span class="s1">&#39;minWidth&#39;</span><span class="p">:</span> <span class="s1">&#39;60px&#39;</span><span class="p">,</span> <span class="s1">&#39;display&#39;</span><span class="p">:</span> <span class="s1">&#39;inline-block&#39;</span><span class="p">}),</span>
+                                <span class="n">html</span><span class="o">.</span><span class="n">Span</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; </span><span class="si">{</span><span class="n">ts_info</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;marginLeft&#39;</span><span class="p">:</span> <span class="s1">&#39;10px&#39;</span><span class="p">,</span> <span class="s1">&#39;overflow&#39;</span><span class="p">:</span> <span class="s1">&#39;hidden&#39;</span><span class="p">,</span> <span class="s1">&#39;textOverflow&#39;</span><span class="p">:</span> <span class="s1">&#39;ellipsis&#39;</span><span class="p">,</span> <span class="s1">&#39;whiteSpace&#39;</span><span class="p">:</span> <span class="s1">&#39;nowrap&#39;</span><span class="p">})</span>
+                            <span class="p">],</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;marginBottom&#39;</span><span class="p">:</span> <span class="s1">&#39;10px&#39;</span><span class="p">,</span> <span class="s1">&#39;overflow&#39;</span><span class="p">:</span> <span class="s1">&#39;hidden&#39;</span><span class="p">}),</span>
+                            <span class="n">html</span><span class="o">.</span><span class="n">Div</span><span class="p">([</span>
+                                <span class="n">html</span><span class="o">.</span><span class="n">Span</span><span class="p">(</span><span class="s2">&quot;Length:&quot;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;fontWeight&#39;</span><span class="p">:</span> <span class="s1">&#39;bold&#39;</span><span class="p">,</span> <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;#34495e&#39;</span><span class="p">,</span> <span class="s1">&#39;minWidth&#39;</span><span class="p">:</span> <span class="s1">&#39;60px&#39;</span><span class="p">,</span> <span class="s1">&#39;display&#39;</span><span class="p">:</span> <span class="s1">&#39;inline-block&#39;</span><span class="p">}),</span>
+                                <span class="n">html</span><span class="o">.</span><span class="n">Span</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; </span><span class="si">{</span><span class="n">ts_info</span><span class="p">[</span><span class="s1">&#39;length&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;marginLeft&#39;</span><span class="p">:</span> <span class="s1">&#39;10px&#39;</span><span class="p">,</span> <span class="s1">&#39;overflow&#39;</span><span class="p">:</span> <span class="s1">&#39;hidden&#39;</span><span class="p">,</span> <span class="s1">&#39;textOverflow&#39;</span><span class="p">:</span> <span class="s1">&#39;ellipsis&#39;</span><span class="p">,</span> <span class="s1">&#39;whiteSpace&#39;</span><span class="p">:</span> <span class="s1">&#39;nowrap&#39;</span><span class="p">})</span>
+                            <span class="p">],</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;marginBottom&#39;</span><span class="p">:</span> <span class="s1">&#39;10px&#39;</span><span class="p">,</span> <span class="s1">&#39;overflow&#39;</span><span class="p">:</span> <span class="s1">&#39;hidden&#39;</span><span class="p">}),</span>
+                            <span class="n">html</span><span class="o">.</span><span class="n">Div</span><span class="p">([</span>
+                                <span class="n">html</span><span class="o">.</span><span class="n">Span</span><span class="p">(</span><span class="s2">&quot;Mean:&quot;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;fontWeight&#39;</span><span class="p">:</span> <span class="s1">&#39;bold&#39;</span><span class="p">,</span> <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;#34495e&#39;</span><span class="p">,</span> <span class="s1">&#39;minWidth&#39;</span><span class="p">:</span> <span class="s1">&#39;60px&#39;</span><span class="p">,</span> <span class="s1">&#39;display&#39;</span><span class="p">:</span> <span class="s1">&#39;inline-block&#39;</span><span class="p">}),</span>
+                                <span class="n">html</span><span class="o">.</span><span class="n">Span</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; </span><span class="si">{</span><span class="n">ts_info</span><span class="p">[</span><span class="s1">&#39;mean&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;marginLeft&#39;</span><span class="p">:</span> <span class="s1">&#39;10px&#39;</span><span class="p">,</span> <span class="s1">&#39;overflow&#39;</span><span class="p">:</span> <span class="s1">&#39;hidden&#39;</span><span class="p">,</span> <span class="s1">&#39;textOverflow&#39;</span><span class="p">:</span> <span class="s1">&#39;ellipsis&#39;</span><span class="p">,</span> <span class="s1">&#39;whiteSpace&#39;</span><span class="p">:</span> <span class="s1">&#39;nowrap&#39;</span><span class="p">})</span>
+                            <span class="p">],</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;marginBottom&#39;</span><span class="p">:</span> <span class="s1">&#39;10px&#39;</span><span class="p">,</span> <span class="s1">&#39;overflow&#39;</span><span class="p">:</span> <span class="s1">&#39;hidden&#39;</span><span class="p">})</span>
+                        <span class="p">],</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;width&#39;</span><span class="p">:</span> <span class="s1">&#39;30%&#39;</span><span class="p">,</span> <span class="s1">&#39;display&#39;</span><span class="p">:</span> <span class="s1">&#39;inline-block&#39;</span><span class="p">,</span> <span class="s1">&#39;verticalAlign&#39;</span><span class="p">:</span> <span class="s1">&#39;top&#39;</span><span class="p">,</span> <span class="s1">&#39;overflow&#39;</span><span class="p">:</span> <span class="s1">&#39;hidden&#39;</span><span class="p">}),</span>
+                        
+                        <span class="c1"># Middle column</span>
+                        <span class="n">html</span><span class="o">.</span><span class="n">Div</span><span class="p">([</span>
+                            <span class="n">html</span><span class="o">.</span><span class="n">Div</span><span class="p">([</span>
+                                <span class="n">html</span><span class="o">.</span><span class="n">Span</span><span class="p">(</span><span class="s2">&quot;Std Dev:&quot;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;fontWeight&#39;</span><span class="p">:</span> <span class="s1">&#39;bold&#39;</span><span class="p">,</span> <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;#34495e&#39;</span><span class="p">,</span> <span class="s1">&#39;minWidth&#39;</span><span class="p">:</span> <span class="s1">&#39;80px&#39;</span><span class="p">,</span> <span class="s1">&#39;display&#39;</span><span class="p">:</span> <span class="s1">&#39;inline-block&#39;</span><span class="p">}),</span>
+                                <span class="n">html</span><span class="o">.</span><span class="n">Span</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; </span><span class="si">{</span><span class="n">ts_info</span><span class="p">[</span><span class="s1">&#39;std&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;marginLeft&#39;</span><span class="p">:</span> <span class="s1">&#39;10px&#39;</span><span class="p">,</span> <span class="s1">&#39;overflow&#39;</span><span class="p">:</span> <span class="s1">&#39;hidden&#39;</span><span class="p">,</span> <span class="s1">&#39;textOverflow&#39;</span><span class="p">:</span> <span class="s1">&#39;ellipsis&#39;</span><span class="p">,</span> <span class="s1">&#39;whiteSpace&#39;</span><span class="p">:</span> <span class="s1">&#39;nowrap&#39;</span><span class="p">})</span>
+                            <span class="p">],</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;marginBottom&#39;</span><span class="p">:</span> <span class="s1">&#39;10px&#39;</span><span class="p">,</span> <span class="s1">&#39;overflow&#39;</span><span class="p">:</span> <span class="s1">&#39;hidden&#39;</span><span class="p">}),</span>
+                            <span class="n">html</span><span class="o">.</span><span class="n">Div</span><span class="p">([</span>
+                                <span class="n">html</span><span class="o">.</span><span class="n">Span</span><span class="p">(</span><span class="s2">&quot;Max Value:&quot;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;fontWeight&#39;</span><span class="p">:</span> <span class="s1">&#39;bold&#39;</span><span class="p">,</span> <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;#34495e&#39;</span><span class="p">,</span> <span class="s1">&#39;minWidth&#39;</span><span class="p">:</span> <span class="s1">&#39;80px&#39;</span><span class="p">,</span> <span class="s1">&#39;display&#39;</span><span class="p">:</span> <span class="s1">&#39;inline-block&#39;</span><span class="p">}),</span>
+                                <span class="n">html</span><span class="o">.</span><span class="n">Span</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; </span><span class="si">{</span><span class="n">ts_info</span><span class="p">[</span><span class="s1">&#39;max&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;marginLeft&#39;</span><span class="p">:</span> <span class="s1">&#39;10px&#39;</span><span class="p">,</span> <span class="s1">&#39;overflow&#39;</span><span class="p">:</span> <span class="s1">&#39;hidden&#39;</span><span class="p">,</span> <span class="s1">&#39;textOverflow&#39;</span><span class="p">:</span> <span class="s1">&#39;ellipsis&#39;</span><span class="p">,</span> <span class="s1">&#39;whiteSpace&#39;</span><span class="p">:</span> <span class="s1">&#39;nowrap&#39;</span><span class="p">})</span>
+                            <span class="p">],</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;marginBottom&#39;</span><span class="p">:</span> <span class="s1">&#39;10px&#39;</span><span class="p">,</span> <span class="s1">&#39;overflow&#39;</span><span class="p">:</span> <span class="s1">&#39;hidden&#39;</span><span class="p">}),</span>
+                            <span class="n">html</span><span class="o">.</span><span class="n">Div</span><span class="p">([</span>
+                                <span class="n">html</span><span class="o">.</span><span class="n">Span</span><span class="p">(</span><span class="s2">&quot;Min Value:&quot;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;fontWeight&#39;</span><span class="p">:</span> <span class="s1">&#39;bold&#39;</span><span class="p">,</span> <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;#34495e&#39;</span><span class="p">,</span> <span class="s1">&#39;minWidth&#39;</span><span class="p">:</span> <span class="s1">&#39;80px&#39;</span><span class="p">,</span> <span class="s1">&#39;display&#39;</span><span class="p">:</span> <span class="s1">&#39;inline-block&#39;</span><span class="p">}),</span>
+                                <span class="n">html</span><span class="o">.</span><span class="n">Span</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; </span><span class="si">{</span><span class="n">ts_info</span><span class="p">[</span><span class="s1">&#39;min&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;marginLeft&#39;</span><span class="p">:</span> <span class="s1">&#39;10px&#39;</span><span class="p">,</span> <span class="s1">&#39;overflow&#39;</span><span class="p">:</span> <span class="s1">&#39;hidden&#39;</span><span class="p">,</span> <span class="s1">&#39;textOverflow&#39;</span><span class="p">:</span> <span class="s1">&#39;ellipsis&#39;</span><span class="p">,</span> <span class="s1">&#39;whiteSpace&#39;</span><span class="p">:</span> <span class="s1">&#39;nowrap&#39;</span><span class="p">})</span>
+                            <span class="p">],</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;marginBottom&#39;</span><span class="p">:</span> <span class="s1">&#39;10px&#39;</span><span class="p">,</span> <span class="s1">&#39;overflow&#39;</span><span class="p">:</span> <span class="s1">&#39;hidden&#39;</span><span class="p">}),</span>
+                            <span class="n">html</span><span class="o">.</span><span class="n">Div</span><span class="p">([</span>
+                                <span class="n">html</span><span class="o">.</span><span class="n">Span</span><span class="p">(</span><span class="s2">&quot;Representative:&quot;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;fontWeight&#39;</span><span class="p">:</span> <span class="s1">&#39;bold&#39;</span><span class="p">,</span> <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;#34495e&#39;</span><span class="p">,</span> <span class="s1">&#39;minWidth&#39;</span><span class="p">:</span> <span class="s1">&#39;80px&#39;</span><span class="p">,</span> <span class="s1">&#39;display&#39;</span><span class="p">:</span> <span class="s1">&#39;inline-block&#39;</span><span class="p">}),</span>
+                                <span class="n">html</span><span class="o">.</span><span class="n">Span</span><span class="p">(</span><span class="s2">&quot; Yes&quot;</span> <span class="k">if</span> <span class="n">ts_info</span><span class="p">[</span><span class="s2">&quot;is_representative&quot;</span><span class="p">]</span> <span class="k">else</span> <span class="s2">&quot; No&quot;</span><span class="p">,</span> 
+                                         <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;marginLeft&#39;</span><span class="p">:</span> <span class="s1">&#39;10px&#39;</span><span class="p">,</span> <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;#34495e&#39;</span> <span class="k">if</span> <span class="n">ts_info</span><span class="p">[</span><span class="s2">&quot;is_representative&quot;</span><span class="p">]</span> <span class="k">else</span> <span class="s1">&#39;#34495e&#39;</span><span class="p">,</span> <span class="s1">&#39;overflow&#39;</span><span class="p">:</span> <span class="s1">&#39;hidden&#39;</span><span class="p">,</span> <span class="s1">&#39;textOverflow&#39;</span><span class="p">:</span> <span class="s1">&#39;ellipsis&#39;</span><span class="p">,</span> <span class="s1">&#39;whiteSpace&#39;</span><span class="p">:</span> <span class="s1">&#39;nowrap&#39;</span><span class="p">})</span>
+                            <span class="p">],</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;marginBottom&#39;</span><span class="p">:</span> <span class="s1">&#39;10px&#39;</span><span class="p">,</span> <span class="s1">&#39;overflow&#39;</span><span class="p">:</span> <span class="s1">&#39;hidden&#39;</span><span class="p">})</span>
+                        <span class="p">],</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;width&#39;</span><span class="p">:</span> <span class="s1">&#39;30%&#39;</span><span class="p">,</span> <span class="s1">&#39;display&#39;</span><span class="p">:</span> <span class="s1">&#39;inline-block&#39;</span><span class="p">,</span> <span class="s1">&#39;verticalAlign&#39;</span><span class="p">:</span> <span class="s1">&#39;top&#39;</span><span class="p">,</span> <span class="s1">&#39;marginLeft&#39;</span><span class="p">:</span> <span class="s1">&#39;4%&#39;</span><span class="p">,</span> <span class="s1">&#39;overflow&#39;</span><span class="p">:</span> <span class="s1">&#39;hidden&#39;</span><span class="p">}),</span>
+                        
+                        <span class="c1"># Gray vertical line</span>
+                        <span class="n">html</span><span class="o">.</span><span class="n">Div</span><span class="p">(</span><span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;width&#39;</span><span class="p">:</span> <span class="s1">&#39;1px&#39;</span><span class="p">,</span> <span class="s1">&#39;backgroundColor&#39;</span><span class="p">:</span> <span class="s1">&#39;#cccccc&#39;</span><span class="p">,</span> <span class="s1">&#39;height&#39;</span><span class="p">:</span> <span class="s1">&#39;120px&#39;</span><span class="p">,</span> <span class="s1">&#39;display&#39;</span><span class="p">:</span> <span class="s1">&#39;inline-block&#39;</span><span class="p">,</span> <span class="s1">&#39;marginLeft&#39;</span><span class="p">:</span> <span class="s1">&#39;2%&#39;</span><span class="p">,</span> <span class="s1">&#39;marginRight&#39;</span><span class="p">:</span> <span class="s1">&#39;2%&#39;</span><span class="p">,</span> <span class="s1">&#39;verticalAlign&#39;</span><span class="p">:</span> <span class="s1">&#39;top&#39;</span><span class="p">}),</span>
+                        
+                        <span class="c1"># Right column</span>
+                        <span class="n">html</span><span class="o">.</span><span class="n">Div</span><span class="p">([</span>
+                            <span class="n">html</span><span class="o">.</span><span class="n">Div</span><span class="p">([</span>
+                                <span class="n">html</span><span class="o">.</span><span class="n">Span</span><span class="p">(</span><span class="s2">&quot;Cluster Information&quot;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;fontWeight&#39;</span><span class="p">:</span> <span class="s1">&#39;bold&#39;</span><span class="p">,</span> <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;#34495e&#39;</span><span class="p">,</span> <span class="s1">&#39;fontSize&#39;</span><span class="p">:</span> <span class="s1">&#39;16px&#39;</span><span class="p">})</span>
+                            <span class="p">],</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;marginBottom&#39;</span><span class="p">:</span> <span class="s1">&#39;15px&#39;</span><span class="p">,</span> <span class="s1">&#39;overflow&#39;</span><span class="p">:</span> <span class="s1">&#39;hidden&#39;</span><span class="p">}),</span>
+                            <span class="n">html</span><span class="o">.</span><span class="n">Div</span><span class="p">([</span>
+                                <span class="n">html</span><span class="o">.</span><span class="n">Span</span><span class="p">(</span><span class="s2">&quot;Cluster ID:&quot;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;fontWeight&#39;</span><span class="p">:</span> <span class="s1">&#39;bold&#39;</span><span class="p">,</span> <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;#34495e&#39;</span><span class="p">,</span> <span class="s1">&#39;minWidth&#39;</span><span class="p">:</span> <span class="s1">&#39;100px&#39;</span><span class="p">,</span> <span class="s1">&#39;display&#39;</span><span class="p">:</span> <span class="s1">&#39;inline-block&#39;</span><span class="p">}),</span>
+                                <span class="n">html</span><span class="o">.</span><span class="n">Span</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; </span><span class="si">{</span><span class="n">ts_info</span><span class="p">[</span><span class="s1">&#39;cluster_id&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;marginLeft&#39;</span><span class="p">:</span> <span class="s1">&#39;10px&#39;</span><span class="p">,</span> <span class="s1">&#39;overflow&#39;</span><span class="p">:</span> <span class="s1">&#39;hidden&#39;</span><span class="p">,</span> <span class="s1">&#39;textOverflow&#39;</span><span class="p">:</span> <span class="s1">&#39;ellipsis&#39;</span><span class="p">,</span> <span class="s1">&#39;whiteSpace&#39;</span><span class="p">:</span> <span class="s1">&#39;nowrap&#39;</span><span class="p">})</span>
+                            <span class="p">],</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;marginBottom&#39;</span><span class="p">:</span> <span class="s1">&#39;10px&#39;</span><span class="p">,</span> <span class="s1">&#39;overflow&#39;</span><span class="p">:</span> <span class="s1">&#39;hidden&#39;</span><span class="p">}),</span>
+                            <span class="n">html</span><span class="o">.</span><span class="n">Div</span><span class="p">([</span>
+                                <span class="n">html</span><span class="o">.</span><span class="n">Span</span><span class="p">(</span><span class="s2">&quot;Cluster Size:&quot;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;fontWeight&#39;</span><span class="p">:</span> <span class="s1">&#39;bold&#39;</span><span class="p">,</span> <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;#34495e&#39;</span><span class="p">,</span> <span class="s1">&#39;minWidth&#39;</span><span class="p">:</span> <span class="s1">&#39;100px&#39;</span><span class="p">,</span> <span class="s1">&#39;display&#39;</span><span class="p">:</span> <span class="s1">&#39;inline-block&#39;</span><span class="p">}),</span>
+                                <span class="n">html</span><span class="o">.</span><span class="n">Span</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; </span><span class="si">{</span><span class="n">cluster_info</span><span class="p">[</span><span class="s1">&#39;number_of_members&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;marginLeft&#39;</span><span class="p">:</span> <span class="s1">&#39;10px&#39;</span><span class="p">,</span> <span class="s1">&#39;overflow&#39;</span><span class="p">:</span> <span class="s1">&#39;hidden&#39;</span><span class="p">,</span> <span class="s1">&#39;textOverflow&#39;</span><span class="p">:</span> <span class="s1">&#39;ellipsis&#39;</span><span class="p">,</span> <span class="s1">&#39;whiteSpace&#39;</span><span class="p">:</span> <span class="s1">&#39;nowrap&#39;</span><span class="p">})</span>
+                            <span class="p">],</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;marginBottom&#39;</span><span class="p">:</span> <span class="s1">&#39;10px&#39;</span><span class="p">,</span> <span class="s1">&#39;overflow&#39;</span><span class="p">:</span> <span class="s1">&#39;hidden&#39;</span><span class="p">}),</span>
+                            <span class="n">html</span><span class="o">.</span><span class="n">Div</span><span class="p">([</span>
+                                <span class="n">html</span><span class="o">.</span><span class="n">Span</span><span class="p">(</span><span class="s2">&quot;Representative Member:&quot;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;fontWeight&#39;</span><span class="p">:</span> <span class="s1">&#39;bold&#39;</span><span class="p">,</span> <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;#34495e&#39;</span><span class="p">,</span> <span class="s1">&#39;minWidth&#39;</span><span class="p">:</span> <span class="s1">&#39;100px&#39;</span><span class="p">,</span> <span class="s1">&#39;display&#39;</span><span class="p">:</span> <span class="s1">&#39;inline-block&#39;</span><span class="p">}),</span>
+                                <span class="n">html</span><span class="o">.</span><span class="n">Span</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; </span><span class="si">{</span><span class="n">cluster_info</span><span class="p">[</span><span class="s1">&#39;best_representative_member&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;marginLeft&#39;</span><span class="p">:</span> <span class="s1">&#39;10px&#39;</span><span class="p">,</span> <span class="s1">&#39;overflow&#39;</span><span class="p">:</span> <span class="s1">&#39;hidden&#39;</span><span class="p">,</span> <span class="s1">&#39;textOverflow&#39;</span><span class="p">:</span> <span class="s1">&#39;ellipsis&#39;</span><span class="p">,</span> <span class="s1">&#39;whiteSpace&#39;</span><span class="p">:</span> <span class="s1">&#39;nowrap&#39;</span><span class="p">})</span>
+                            <span class="p">],</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;marginBottom&#39;</span><span class="p">:</span> <span class="s1">&#39;10px&#39;</span><span class="p">,</span> <span class="s1">&#39;overflow&#39;</span><span class="p">:</span> <span class="s1">&#39;hidden&#39;</span><span class="p">})</span>
+                        <span class="p">],</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;width&#39;</span><span class="p">:</span> <span class="s1">&#39;30%&#39;</span><span class="p">,</span> <span class="s1">&#39;display&#39;</span><span class="p">:</span> <span class="s1">&#39;inline-block&#39;</span><span class="p">,</span> <span class="s1">&#39;verticalAlign&#39;</span><span class="p">:</span> <span class="s1">&#39;top&#39;</span><span class="p">,</span> <span class="s1">&#39;overflow&#39;</span><span class="p">:</span> <span class="s1">&#39;hidden&#39;</span><span class="p">})</span>
+                    <span class="p">],</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;wordWrap&#39;</span><span class="p">:</span> <span class="s1">&#39;break-word&#39;</span><span class="p">})</span>
+                <span class="p">])]</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">KeyError</span><span class="p">,</span> <span class="ne">IndexError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">):</span>
+            <span class="k">return</span> <span class="p">[</span>
+                <span class="n">html</span><span class="o">.</span><span class="n">Div</span><span class="p">([</span>
+                    <span class="n">html</span><span class="o">.</span><span class="n">P</span><span class="p">(</span><span class="s2">&quot;Error: Unable to display information for the selected time series.&quot;</span><span class="p">,</span> 
+                           <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;textAlign&#39;</span><span class="p">:</span> <span class="s1">&#39;center&#39;</span><span class="p">,</span> <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;#e74c3c&#39;</span><span class="p">,</span> <span class="s1">&#39;fontSize&#39;</span><span class="p">:</span> <span class="s1">&#39;16px&#39;</span><span class="p">})</span>
+                <span class="p">],</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;padding&#39;</span><span class="p">:</span> <span class="s1">&#39;20px&#39;</span><span class="p">})</span>
+            <span class="p">]</span>
+
+    <span class="n">app</span><span class="o">.</span><span class="n">cluster_data</span> <span class="o">=</span> <span class="n">cluster_data</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">time_series_data</span> <span class="o">=</span> <span class="n">time_series_data</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">open_browser</span><span class="p">():</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">1.5</span><span class="p">)</span>  <span class="c1"># Wait for server to start</span>
+        <span class="n">webbrowser</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;http://127.0.0.1:</span><span class="si">{</span><span class="n">port</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+    <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">open_browser</span><span class="p">,</span> <span class="n">daemon</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">app</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="n">port</span><span class="p">,</span> <span class="n">host</span><span class="o">=</span><span class="s1">&#39;127.0.0.1&#39;</span><span class="p">,</span> 
+                <span class="n">dev_tools_silence_routes_logging</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> 
+                <span class="n">use_reloader</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error starting server: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+
+
+
+<div class="viewcode-block" id="multiple_tabs_interactive_plot_clusters">
+<a class="viewcode-back" href="../../api/plotting.html#simclstr.plotting.multiple_tabs_interactive_plot_clusters">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">multiple_tabs_interactive_plot_clusters</span><span class="p">(</span><span class="n">cluster_list</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="s2">&quot;Cluster&quot;</span><span class="p">],</span> <span class="n">dist</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">port</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">8051</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create an interactive plot of cluster members, each cluster is displayed in its own tab.</span>
+
+<span class="sd">    When you click on a time series, information about that time series and its cluster will appear in the information panel.</span>
+
+<span class="sd">    Additionally includes a &quot;Representatives&quot; tab showing all cluster representatives in one plot.</span>
+
+<span class="sd">    Press Ctrl+C to stop the server.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    cluster_list : List[Cluster]</span>
+<span class="sd">        List of Cluster objects containing clustered time series data.</span>
+<span class="sd">    dist : str</span>
+<span class="sd">        Distance metric name used for clustering.</span>
+<span class="sd">    port : int, default=8051</span>
+<span class="sd">        Port number for the Dash server.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">app</span> <span class="o">=</span> <span class="n">dash</span><span class="o">.</span><span class="n">Dash</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">title</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Interactive Clustering Tabs - </span><span class="si">{</span><span class="n">dist</span><span class="si">}</span><span class="s2">&quot;</span>
+    
+    <span class="n">colors</span> <span class="o">=</span> <span class="n">px</span><span class="o">.</span><span class="n">colors</span><span class="o">.</span><span class="n">qualitative</span><span class="o">.</span><span class="n">Set1</span> <span class="o">+</span> <span class="n">px</span><span class="o">.</span><span class="n">colors</span><span class="o">.</span><span class="n">qualitative</span><span class="o">.</span><span class="n">Set2</span> <span class="o">+</span> <span class="n">px</span><span class="o">.</span><span class="n">colors</span><span class="o">.</span><span class="n">qualitative</span><span class="o">.</span><span class="n">Set3</span>
+    
+    <span class="n">cluster_data</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">time_series_data</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">representative_data</span> <span class="o">=</span> <span class="p">{}</span>
+    
+    <span class="k">for</span> <span class="n">clust</span> <span class="ow">in</span> <span class="n">cluster_list</span><span class="p">:</span>
+        <span class="n">cluster_data</span><span class="p">[</span><span class="n">clust</span><span class="o">.</span><span class="n">cluster_id</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;cluster_id&#39;</span><span class="p">:</span> <span class="n">clust</span><span class="o">.</span><span class="n">cluster_id</span><span class="p">,</span>
+            <span class="s1">&#39;number_of_members&#39;</span><span class="p">:</span> <span class="n">clust</span><span class="o">.</span><span class="n">number_of_members</span><span class="p">,</span>
+            <span class="s1">&#39;indices_of_members&#39;</span><span class="p">:</span> <span class="n">clust</span><span class="o">.</span><span class="n">indices_of_members</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+            <span class="s1">&#39;best_representative_member&#39;</span><span class="p">:</span> <span class="n">clust</span><span class="o">.</span><span class="n">best_representative_member</span><span class="o">.</span><span class="n">label</span><span class="p">,</span>
+            <span class="s1">&#39;labels_of_members&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">member</span><span class="o">.</span><span class="n">label</span> <span class="k">for</span> <span class="n">member</span> <span class="ow">in</span> <span class="n">clust</span><span class="o">.</span><span class="n">list_of_members</span><span class="p">]</span>
+        <span class="p">}</span>
+        
+        <span class="n">representative_ts</span> <span class="o">=</span> <span class="n">clust</span><span class="o">.</span><span class="n">best_representative_member</span>
+        <span class="n">repr_id</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;repr_cluster_</span><span class="si">{</span><span class="n">clust</span><span class="o">.</span><span class="n">cluster_id</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="n">representative_data</span><span class="p">[</span><span class="n">repr_id</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">representative_ts</span><span class="o">.</span><span class="n">label</span><span class="p">,</span>
+            <span class="s1">&#39;cluster_id&#39;</span><span class="p">:</span> <span class="n">clust</span><span class="o">.</span><span class="n">cluster_id</span><span class="p">,</span>
+            <span class="s1">&#39;data&#39;</span><span class="p">:</span> <span class="n">representative_ts</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
+            <span class="s1">&#39;length&#39;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">representative_ts</span><span class="o">.</span><span class="n">data</span><span class="p">),</span>
+            <span class="s1">&#39;mean&#39;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">representative_ts</span><span class="o">.</span><span class="n">data</span><span class="p">)),</span>
+            <span class="s1">&#39;std&#39;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">representative_ts</span><span class="o">.</span><span class="n">data</span><span class="p">)),</span>
+            <span class="s1">&#39;min&#39;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">representative_ts</span><span class="o">.</span><span class="n">data</span><span class="p">)),</span>
+            <span class="s1">&#39;max&#39;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">representative_ts</span><span class="o">.</span><span class="n">data</span><span class="p">)),</span>
+            <span class="s1">&#39;feature_vector&#39;</span><span class="p">:</span> <span class="n">representative_ts</span><span class="o">.</span><span class="n">feature_vector</span>
+        <span class="p">}</span>
+        
+        <span class="k">for</span> <span class="n">j_idx</span><span class="p">,</span> <span class="n">each_ts</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">clust</span><span class="o">.</span><span class="n">list_of_members</span><span class="p">):</span>
+            <span class="n">ts_id</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;cluster_</span><span class="si">{</span><span class="n">clust</span><span class="o">.</span><span class="n">cluster_id</span><span class="si">}</span><span class="s2">_ts_</span><span class="si">{</span><span class="n">j_idx</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="n">time_series_data</span><span class="p">[</span><span class="n">ts_id</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">each_ts</span><span class="o">.</span><span class="n">label</span><span class="p">,</span>
+                <span class="s1">&#39;cluster_id&#39;</span><span class="p">:</span> <span class="n">clust</span><span class="o">.</span><span class="n">cluster_id</span><span class="p">,</span>
+                <span class="s1">&#39;length&#39;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">each_ts</span><span class="o">.</span><span class="n">data</span><span class="p">),</span>
+                <span class="s1">&#39;mean&#39;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">each_ts</span><span class="o">.</span><span class="n">data</span><span class="p">)),</span>
+                <span class="s1">&#39;std&#39;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">each_ts</span><span class="o">.</span><span class="n">data</span><span class="p">)),</span>
+                <span class="s1">&#39;min&#39;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">each_ts</span><span class="o">.</span><span class="n">data</span><span class="p">)),</span>
+                <span class="s1">&#39;max&#39;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">each_ts</span><span class="o">.</span><span class="n">data</span><span class="p">)),</span>
+                <span class="s1">&#39;is_representative&#39;</span><span class="p">:</span> <span class="n">each_ts</span><span class="o">.</span><span class="n">label</span> <span class="o">==</span> <span class="n">clust</span><span class="o">.</span><span class="n">best_representative_member</span><span class="o">.</span><span class="n">label</span><span class="p">,</span>
+                <span class="s1">&#39;data&#39;</span><span class="p">:</span> <span class="n">each_ts</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+                <span class="s1">&#39;feature_vector&#39;</span><span class="p">:</span> <span class="n">each_ts</span><span class="o">.</span><span class="n">feature_vector</span>
+            <span class="p">}</span>
+
+    <span class="n">tabs</span> <span class="o">=</span> <span class="p">[]</span>
+    
+    <span class="c1"># Individual cluster tabs</span>
+    <span class="k">for</span> <span class="n">clust</span> <span class="ow">in</span> <span class="n">cluster_list</span><span class="p">:</span>
+        <span class="n">tab_content</span> <span class="o">=</span> <span class="n">_create_cluster_tab_content</span><span class="p">(</span><span class="n">clust</span><span class="p">,</span> <span class="n">colors</span><span class="p">,</span> <span class="n">time_series_data</span><span class="p">,</span> <span class="n">cluster_data</span><span class="p">)</span>
+        <span class="n">tabs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dcc</span><span class="o">.</span><span class="n">Tab</span><span class="p">(</span>
+            <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;Cluster </span><span class="si">{</span><span class="n">clust</span><span class="o">.</span><span class="n">cluster_id</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+            <span class="n">value</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;cluster-</span><span class="si">{</span><span class="n">clust</span><span class="o">.</span><span class="n">cluster_id</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+            <span class="n">children</span><span class="o">=</span><span class="n">tab_content</span><span class="p">,</span>
+            <span class="n">style</span><span class="o">=</span><span class="p">{</span>
+                <span class="s1">&#39;padding&#39;</span><span class="p">:</span> <span class="s1">&#39;8px 16px&#39;</span><span class="p">,</span> 
+                <span class="s1">&#39;fontWeight&#39;</span><span class="p">:</span> <span class="s1">&#39;bold&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;fontSize&#39;</span><span class="p">:</span> <span class="s1">&#39;14px&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;border&#39;</span><span class="p">:</span> <span class="s1">&#39;none&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;borderRadius&#39;</span><span class="p">:</span> <span class="s1">&#39;8px 8px 0 0&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;margin&#39;</span><span class="p">:</span> <span class="s1">&#39;0 2px&#39;</span>
+            <span class="p">},</span>
+            <span class="n">selected_style</span><span class="o">=</span><span class="p">{</span>
+                <span class="s1">&#39;padding&#39;</span><span class="p">:</span> <span class="s1">&#39;8px 16px&#39;</span><span class="p">,</span> 
+                <span class="s1">&#39;fontWeight&#39;</span><span class="p">:</span> <span class="s1">&#39;bold&#39;</span><span class="p">,</span> 
+                <span class="s1">&#39;backgroundColor&#39;</span><span class="p">:</span> <span class="s1">&#39;#119DFF&#39;</span><span class="p">,</span> 
+                <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;white&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;fontSize&#39;</span><span class="p">:</span> <span class="s1">&#39;14px&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;border&#39;</span><span class="p">:</span> <span class="s1">&#39;none&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;borderRadius&#39;</span><span class="p">:</span> <span class="s1">&#39;8px 8px 0 0&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;margin&#39;</span><span class="p">:</span> <span class="s1">&#39;0 2px&#39;</span>
+            <span class="p">}</span>
+        <span class="p">))</span>
+    
+    <span class="c1"># Representatives tab</span>
+    <span class="n">repr_tab_content</span> <span class="o">=</span> <span class="n">_create_representatives_tab_content</span><span class="p">(</span><span class="n">cluster_list</span><span class="p">,</span> <span class="n">colors</span><span class="p">,</span> <span class="n">representative_data</span><span class="p">,</span> <span class="n">cluster_data</span><span class="p">)</span>
+    <span class="n">tabs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dcc</span><span class="o">.</span><span class="n">Tab</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Representatives&#39;</span><span class="p">,</span>
+        <span class="n">value</span><span class="o">=</span><span class="s1">&#39;representatives&#39;</span><span class="p">,</span>
+        <span class="n">children</span><span class="o">=</span><span class="n">repr_tab_content</span><span class="p">,</span>
+        <span class="n">style</span><span class="o">=</span><span class="p">{</span>
+            <span class="s1">&#39;padding&#39;</span><span class="p">:</span> <span class="s1">&#39;8px 16px&#39;</span><span class="p">,</span> 
+            <span class="s1">&#39;fontWeight&#39;</span><span class="p">:</span> <span class="s1">&#39;bold&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;fontSize&#39;</span><span class="p">:</span> <span class="s1">&#39;14px&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;border&#39;</span><span class="p">:</span> <span class="s1">&#39;none&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;borderRadius&#39;</span><span class="p">:</span> <span class="s1">&#39;8px 8px 0 0&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;margin&#39;</span><span class="p">:</span> <span class="s1">&#39;0 2px&#39;</span>
+        <span class="p">},</span>
+        <span class="n">selected_style</span><span class="o">=</span><span class="p">{</span>
+            <span class="s1">&#39;padding&#39;</span><span class="p">:</span> <span class="s1">&#39;8px 16px&#39;</span><span class="p">,</span> 
+            <span class="s1">&#39;fontWeight&#39;</span><span class="p">:</span> <span class="s1">&#39;bold&#39;</span><span class="p">,</span> 
+            <span class="s1">&#39;backgroundColor&#39;</span><span class="p">:</span> <span class="s1">&#39;#119DFF&#39;</span><span class="p">,</span> 
+            <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;white&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;fontSize&#39;</span><span class="p">:</span> <span class="s1">&#39;14px&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;border&#39;</span><span class="p">:</span> <span class="s1">&#39;none&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;borderRadius&#39;</span><span class="p">:</span> <span class="s1">&#39;8px 8px 0 0&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;margin&#39;</span><span class="p">:</span> <span class="s1">&#39;0 2px&#39;</span>
+        <span class="p">}</span>
+    <span class="p">))</span>
+
+    <span class="c1"># Main layout</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">layout</span> <span class="o">=</span> <span class="n">html</span><span class="o">.</span><span class="n">Div</span><span class="p">([</span>
+        <span class="n">html</span><span class="o">.</span><span class="n">Div</span><span class="p">([</span>
+            <span class="n">html</span><span class="o">.</span><span class="n">H1</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Interactive Clustering Tabs - </span><span class="si">{</span><span class="n">dist</span><span class="si">}</span><span class="s2"> distance&quot;</span><span class="p">,</span> 
+                   <span class="n">style</span><span class="o">=</span><span class="p">{</span>
+                       <span class="s1">&#39;textAlign&#39;</span><span class="p">:</span> <span class="s1">&#39;center&#39;</span><span class="p">,</span> 
+                       <span class="s1">&#39;marginBottom&#39;</span><span class="p">:</span> <span class="s1">&#39;25px&#39;</span><span class="p">,</span> 
+                       <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;#1a202c&#39;</span><span class="p">,</span>
+                       <span class="s1">&#39;fontFamily&#39;</span><span class="p">:</span> <span class="s1">&#39;Arial, sans-serif&#39;</span><span class="p">,</span>
+                       <span class="s1">&#39;fontSize&#39;</span><span class="p">:</span> <span class="s1">&#39;28px&#39;</span><span class="p">,</span>
+                       <span class="s1">&#39;fontWeight&#39;</span><span class="p">:</span> <span class="s1">&#39;bold&#39;</span>
+                   <span class="p">})</span>
+        <span class="p">]),</span>
+        
+        <span class="n">html</span><span class="o">.</span><span class="n">Div</span><span class="p">([</span>
+            <span class="n">dcc</span><span class="o">.</span><span class="n">Tabs</span><span class="p">(</span>
+                <span class="nb">id</span><span class="o">=</span><span class="s2">&quot;main-tabs&quot;</span><span class="p">,</span>
+                <span class="n">value</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;cluster-</span><span class="si">{</span><span class="n">cluster_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">cluster_id</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+                <span class="n">children</span><span class="o">=</span><span class="n">tabs</span><span class="p">,</span>
+                <span class="n">style</span><span class="o">=</span><span class="p">{</span>
+                    <span class="s1">&#39;height&#39;</span><span class="p">:</span> <span class="s1">&#39;50px&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;fontFamily&#39;</span><span class="p">:</span> <span class="s1">&#39;Arial, sans-serif&#39;</span>
+                <span class="p">},</span>
+                <span class="n">colors</span><span class="o">=</span><span class="p">{</span>
+                    <span class="s1">&#39;border&#39;</span><span class="p">:</span> <span class="s1">&#39;white&#39;</span><span class="p">,</span> 
+                    <span class="s1">&#39;primary&#39;</span><span class="p">:</span> <span class="s1">&#39;#119DFF&#39;</span><span class="p">,</span> 
+                    <span class="s1">&#39;background&#39;</span><span class="p">:</span> <span class="s1">&#39;#f8f9fa&#39;</span>
+                <span class="p">}</span>
+            <span class="p">)</span>
+        <span class="p">],</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span>
+            <span class="s1">&#39;backgroundColor&#39;</span><span class="p">:</span> <span class="s1">&#39;#ffffff&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;borderRadius&#39;</span><span class="p">:</span> <span class="s1">&#39;12px&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;boxShadow&#39;</span><span class="p">:</span> <span class="s1">&#39;0 2px 4px rgba(0,0,0,0.1)&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;overflow&#39;</span><span class="p">:</span> <span class="s1">&#39;hidden&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;marginBottom&#39;</span><span class="p">:</span> <span class="s1">&#39;20px&#39;</span>
+        <span class="p">})</span>
+    <span class="p">],</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span>
+        <span class="s1">&#39;backgroundColor&#39;</span><span class="p">:</span> <span class="s1">&#39;#f8f9fa&#39;</span><span class="p">,</span> 
+        <span class="s1">&#39;minHeight&#39;</span><span class="p">:</span> <span class="s1">&#39;100vh&#39;</span><span class="p">,</span> 
+        <span class="s1">&#39;padding&#39;</span><span class="p">:</span> <span class="s1">&#39;20px&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;fontFamily&#39;</span><span class="p">:</span> <span class="s1">&#39;Arial, sans-serif&#39;</span>
+    <span class="p">})</span>
+
+    <span class="c1"># Callbacks for each cluster tab</span>
+    <span class="k">for</span> <span class="n">clust</span> <span class="ow">in</span> <span class="n">cluster_list</span><span class="p">:</span>
+        <span class="n">_create_cluster_callbacks</span><span class="p">(</span><span class="n">app</span><span class="p">,</span> <span class="n">clust</span><span class="o">.</span><span class="n">cluster_id</span><span class="p">,</span> <span class="n">time_series_data</span><span class="p">,</span> <span class="n">cluster_data</span><span class="p">)</span>
+    
+    <span class="c1"># Callback for representatives tab</span>
+    <span class="n">_create_representatives_callback</span><span class="p">(</span><span class="n">app</span><span class="p">,</span> <span class="n">representative_data</span><span class="p">,</span> <span class="n">cluster_data</span><span class="p">)</span>
+    
+    <span class="c1"># Auto-open browser</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">open_browser</span><span class="p">():</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">1.5</span><span class="p">)</span>
+        <span class="n">webbrowser</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;http://127.0.0.1:</span><span class="si">{</span><span class="n">port</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+    <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">open_browser</span><span class="p">,</span> <span class="n">daemon</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">app</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="n">port</span><span class="p">,</span> <span class="n">host</span><span class="o">=</span><span class="s1">&#39;127.0.0.1&#39;</span><span class="p">,</span> 
+                <span class="n">dev_tools_silence_routes_logging</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> 
+                <span class="n">use_reloader</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error starting server: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_create_cluster_tab_content</span><span class="p">(</span><span class="n">clust</span><span class="p">,</span> <span class="n">colors</span><span class="p">,</span> <span class="n">time_series_data</span><span class="p">,</span> <span class="n">cluster_data</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create content for individual cluster tab.&quot;&quot;&quot;</span>
+    
+    <span class="c1"># First row: Cluster info panel (left) and representative plot (right)</span>
+    <span class="n">repr_name</span> <span class="o">=</span> <span class="n">clust</span><span class="o">.</span><span class="n">best_representative_member</span><span class="o">.</span><span class="n">label</span>
+    <span class="n">repr_data</span> <span class="o">=</span> <span class="n">clust</span><span class="o">.</span><span class="n">best_representative_member</span><span class="o">.</span><span class="n">data</span>
+    <span class="n">repr_fig</span> <span class="o">=</span> <span class="n">go</span><span class="o">.</span><span class="n">Figure</span><span class="p">()</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">repr_data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    
+    <span class="n">repr_fig</span><span class="o">.</span><span class="n">add_trace</span><span class="p">(</span><span class="n">go</span><span class="o">.</span><span class="n">Scatter</span><span class="p">(</span>
+        <span class="n">x</span><span class="o">=</span><span class="n">t</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">repr_data</span><span class="p">,</span>
+        <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;lines&#39;</span><span class="p">,</span>
+        <span class="n">name</span><span class="o">=</span><span class="n">repr_name</span><span class="p">,</span>
+        <span class="n">line</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">width</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;#e74c3c&#39;</span><span class="p">),</span>
+        <span class="n">hovertemplate</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;&lt;b&gt;</span><span class="si">{</span><span class="n">repr_name</span><span class="si">}</span><span class="s2">&lt;/b&gt;&lt;br&gt;Time: %</span><span class="se">{{</span><span class="s2">x</span><span class="se">}}</span><span class="s2">&lt;br&gt;Value: %</span><span class="se">{{</span><span class="s2">y:.3f</span><span class="se">}}</span><span class="s2">&lt;extra&gt;&lt;/extra&gt;&quot;</span>
+    <span class="p">))</span>
+    
+    <span class="n">repr_fig</span><span class="o">.</span><span class="n">update_layout</span><span class="p">(</span>
+        <span class="n">title</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Representative Member&quot;</span><span class="p">,</span>
+        <span class="n">height</span><span class="o">=</span><span class="mi">280</span><span class="p">,</span>
+        <span class="n">showlegend</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">plot_bgcolor</span><span class="o">=</span><span class="s1">&#39;#f8f9fa&#39;</span><span class="p">,</span>
+        <span class="n">paper_bgcolor</span><span class="o">=</span><span class="s1">&#39;#f8f9fa&#39;</span><span class="p">,</span>
+        <span class="n">autosize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">margin</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">l</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span> <span class="n">t</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">40</span><span class="p">)</span>
+    <span class="p">)</span>
+    
+    <span class="c1"># Second row: All time series</span>
+    <span class="n">all_series_fig</span> <span class="o">=</span> <span class="n">go</span><span class="o">.</span><span class="n">Figure</span><span class="p">()</span>
+    
+    <span class="k">for</span> <span class="n">j_idx</span><span class="p">,</span> <span class="n">each_ts</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">clust</span><span class="o">.</span><span class="n">list_of_members</span><span class="p">):</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">each_ts</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">is_repr</span> <span class="o">=</span> <span class="n">each_ts</span><span class="o">.</span><span class="n">label</span> <span class="o">==</span> <span class="n">clust</span><span class="o">.</span><span class="n">best_representative_member</span><span class="o">.</span><span class="n">label</span>
+        <span class="n">line_color</span> <span class="o">=</span> <span class="s1">&#39;#e74c3c&#39;</span> <span class="k">if</span> <span class="n">is_repr</span> <span class="k">else</span> <span class="n">colors</span><span class="p">[</span><span class="n">j_idx</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">colors</span><span class="p">)]</span>
+        <span class="n">line_width</span> <span class="o">=</span> <span class="mf">3.5</span> <span class="k">if</span> <span class="n">is_repr</span> <span class="k">else</span> <span class="mf">2.5</span>
+        <span class="n">opacity</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="k">if</span> <span class="n">is_repr</span> <span class="k">else</span> <span class="mf">0.8</span>
+        <span class="n">ts_id</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;cluster_</span><span class="si">{</span><span class="n">clust</span><span class="o">.</span><span class="n">cluster_id</span><span class="si">}</span><span class="s2">_ts_</span><span class="si">{</span><span class="n">j_idx</span><span class="si">}</span><span class="s2">&quot;</span>
+        
+        <span class="n">all_series_fig</span><span class="o">.</span><span class="n">add_trace</span><span class="p">(</span><span class="n">go</span><span class="o">.</span><span class="n">Scatter</span><span class="p">(</span>
+            <span class="n">x</span><span class="o">=</span><span class="n">t</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">each_ts</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
+            <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;lines&#39;</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">each_ts</span><span class="o">.</span><span class="n">label</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+            <span class="n">line</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">width</span><span class="o">=</span><span class="n">line_width</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">line_color</span><span class="p">),</span>
+            <span class="n">opacity</span><span class="o">=</span><span class="n">opacity</span><span class="p">,</span>
+            <span class="n">customdata</span><span class="o">=</span><span class="p">[</span><span class="n">ts_id</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="p">),</span>
+            <span class="n">hovertemplate</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;&lt;b&gt;</span><span class="si">{</span><span class="n">each_ts</span><span class="o">.</span><span class="n">label</span><span class="si">}</span><span class="s2">&lt;/b&gt;&lt;br&gt;Time: %</span><span class="se">{{</span><span class="s2">x</span><span class="se">}}</span><span class="s2">&lt;br&gt;Value: %</span><span class="se">{{</span><span class="s2">y:.3f</span><span class="se">}}</span><span class="s2">&lt;br&gt;</span><span class="si">{</span><span class="s1">&#39;Representative&#39;</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">is_repr</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">&#39;&#39;</span><span class="si">}</span><span class="s2">&lt;extra&gt;&lt;/extra&gt;&quot;</span>
+        <span class="p">))</span>
+    
+    <span class="n">all_series_fig</span><span class="o">.</span><span class="n">update_layout</span><span class="p">(</span>
+        <span class="n">title</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;All Time Series in Cluster </span><span class="si">{</span><span class="n">clust</span><span class="o">.</span><span class="n">cluster_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="n">height</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span>
+        <span class="n">showlegend</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">clickmode</span><span class="o">=</span><span class="s1">&#39;event+select&#39;</span><span class="p">,</span>
+        <span class="n">plot_bgcolor</span><span class="o">=</span><span class="s1">&#39;#f8f9fa&#39;</span><span class="p">,</span>
+        <span class="n">paper_bgcolor</span><span class="o">=</span><span class="s1">&#39;#f8f9fa&#39;</span>
+    <span class="p">)</span>
+    
+    <span class="c1"># Create cluster info panel content</span>
+    <span class="n">cluster_info_content</span> <span class="o">=</span> <span class="n">html</span><span class="o">.</span><span class="n">Div</span><span class="p">([</span>
+        <span class="n">html</span><span class="o">.</span><span class="n">H3</span><span class="p">(</span><span class="s2">&quot;Cluster Information&quot;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span>
+            <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;#1a202c&#39;</span><span class="p">,</span> 
+            <span class="s1">&#39;marginBottom&#39;</span><span class="p">:</span> <span class="s1">&#39;15px&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;fontSize&#39;</span><span class="p">:</span> <span class="s1">&#39;18px&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;fontWeight&#39;</span><span class="p">:</span> <span class="s1">&#39;bold&#39;</span>
+        <span class="p">}),</span>
+        <span class="n">html</span><span class="o">.</span><span class="n">P</span><span class="p">([</span><span class="n">html</span><span class="o">.</span><span class="n">Strong</span><span class="p">(</span><span class="s2">&quot;Cluster ID: &quot;</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">clust</span><span class="o">.</span><span class="n">cluster_id</span><span class="p">)],</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span>
+            <span class="s1">&#39;marginBottom&#39;</span><span class="p">:</span> <span class="s1">&#39;10px&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;fontSize&#39;</span><span class="p">:</span> <span class="s1">&#39;14px&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;lineHeight&#39;</span><span class="p">:</span> <span class="s1">&#39;1.5&#39;</span>
+        <span class="p">}),</span>
+        <span class="n">html</span><span class="o">.</span><span class="n">P</span><span class="p">([</span><span class="n">html</span><span class="o">.</span><span class="n">Strong</span><span class="p">(</span><span class="s2">&quot;Number of Members: &quot;</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">clust</span><span class="o">.</span><span class="n">number_of_members</span><span class="p">)],</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span>
+            <span class="s1">&#39;marginBottom&#39;</span><span class="p">:</span> <span class="s1">&#39;10px&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;fontSize&#39;</span><span class="p">:</span> <span class="s1">&#39;14px&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;lineHeight&#39;</span><span class="p">:</span> <span class="s1">&#39;1.5&#39;</span>
+        <span class="p">}),</span>
+        <span class="n">html</span><span class="o">.</span><span class="n">P</span><span class="p">([</span><span class="n">html</span><span class="o">.</span><span class="n">Strong</span><span class="p">(</span><span class="s2">&quot;Representative Member: &quot;</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">clust</span><span class="o">.</span><span class="n">best_representative_member</span><span class="o">.</span><span class="n">label</span><span class="p">)],</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span>
+            <span class="s1">&#39;marginBottom&#39;</span><span class="p">:</span> <span class="s1">&#39;8px&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;fontSize&#39;</span><span class="p">:</span> <span class="s1">&#39;14px&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;lineHeight&#39;</span><span class="p">:</span> <span class="s1">&#39;1.5&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;wordBreak&#39;</span><span class="p">:</span> <span class="s1">&#39;break-word&#39;</span>
+        <span class="p">})</span>
+    <span class="p">],</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span>
+        <span class="s1">&#39;backgroundColor&#39;</span><span class="p">:</span> <span class="s1">&#39;#ffffff&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;border&#39;</span><span class="p">:</span> <span class="s1">&#39;1px solid #e2e8f0&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;borderRadius&#39;</span><span class="p">:</span> <span class="s1">&#39;12px&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;padding&#39;</span><span class="p">:</span> <span class="s1">&#39;20px&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;height&#39;</span><span class="p">:</span> <span class="s1">&#39;260px&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;overflow&#39;</span><span class="p">:</span> <span class="s1">&#39;auto&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;boxShadow&#39;</span><span class="p">:</span> <span class="s1">&#39;0 2px 4px rgba(0,0,0,0.1)&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;position&#39;</span><span class="p">:</span> <span class="s1">&#39;relative&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;zIndex&#39;</span><span class="p">:</span> <span class="s1">&#39;1&#39;</span>
+    <span class="p">})</span>
+    
+    <span class="k">return</span> <span class="n">html</span><span class="o">.</span><span class="n">Div</span><span class="p">([</span>
+        <span class="c1"># First row: Info panel (left) and representative plot (right)</span>
+        <span class="n">html</span><span class="o">.</span><span class="n">Div</span><span class="p">([</span>
+            <span class="n">html</span><span class="o">.</span><span class="n">Div</span><span class="p">([</span><span class="n">cluster_info_content</span><span class="p">],</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span>
+                <span class="s1">&#39;width&#39;</span><span class="p">:</span> <span class="s1">&#39;30%&#39;</span><span class="p">,</span> 
+                <span class="s1">&#39;display&#39;</span><span class="p">:</span> <span class="s1">&#39;inline-block&#39;</span><span class="p">,</span> 
+                <span class="s1">&#39;verticalAlign&#39;</span><span class="p">:</span> <span class="s1">&#39;top&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;paddingRight&#39;</span><span class="p">:</span> <span class="s1">&#39;15px&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;boxSizing&#39;</span><span class="p">:</span> <span class="s1">&#39;border-box&#39;</span>
+            <span class="p">}),</span>
+            <span class="n">html</span><span class="o">.</span><span class="n">Div</span><span class="p">([</span>
+                <span class="n">dcc</span><span class="o">.</span><span class="n">Graph</span><span class="p">(</span>
+                    <span class="n">figure</span><span class="o">=</span><span class="n">repr_fig</span><span class="p">,</span>
+                    <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;height&#39;</span><span class="p">:</span> <span class="s1">&#39;280px&#39;</span><span class="p">},</span>
+                    <span class="n">config</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;displayModeBar&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;responsive&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
+                <span class="p">)</span>
+            <span class="p">],</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span>
+                <span class="s1">&#39;width&#39;</span><span class="p">:</span> <span class="s1">&#39;70%&#39;</span><span class="p">,</span> 
+                <span class="s1">&#39;display&#39;</span><span class="p">:</span> <span class="s1">&#39;inline-block&#39;</span><span class="p">,</span> 
+                <span class="s1">&#39;verticalAlign&#39;</span><span class="p">:</span> <span class="s1">&#39;top&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;boxSizing&#39;</span><span class="p">:</span> <span class="s1">&#39;border-box&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;backgroundColor&#39;</span><span class="p">:</span> <span class="s1">&#39;#f8f9fa&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;borderRadius&#39;</span><span class="p">:</span> <span class="s1">&#39;12px&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;padding&#39;</span><span class="p">:</span> <span class="s1">&#39;10px&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;boxShadow&#39;</span><span class="p">:</span> <span class="s1">&#39;0 2px 4px rgba(0,0,0,0.1)&#39;</span>
+            <span class="p">})</span>
+        <span class="p">],</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span>
+            <span class="s1">&#39;marginBottom&#39;</span><span class="p">:</span> <span class="s1">&#39;20px&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;display&#39;</span><span class="p">:</span> <span class="s1">&#39;flex&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;alignItems&#39;</span><span class="p">:</span> <span class="s1">&#39;flex-start&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;gap&#39;</span><span class="p">:</span> <span class="s1">&#39;15px&#39;</span>
+        <span class="p">}),</span>
+        
+        <span class="c1"># Second row: All time series</span>
+        <span class="n">html</span><span class="o">.</span><span class="n">Div</span><span class="p">([</span>
+            <span class="n">dcc</span><span class="o">.</span><span class="n">Graph</span><span class="p">(</span>
+                <span class="nb">id</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;all-series-plot-</span><span class="si">{</span><span class="n">clust</span><span class="o">.</span><span class="n">cluster_id</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+                <span class="n">figure</span><span class="o">=</span><span class="n">all_series_fig</span><span class="p">,</span>
+                <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;width&#39;</span><span class="p">:</span> <span class="s1">&#39;100%&#39;</span><span class="p">,</span> <span class="s1">&#39;height&#39;</span><span class="p">:</span> <span class="s1">&#39;400px&#39;</span><span class="p">},</span>
+                <span class="n">config</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;displayModeBar&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;responsive&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
+            <span class="p">)</span>
+        <span class="p">],</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span>
+            <span class="s1">&#39;marginBottom&#39;</span><span class="p">:</span> <span class="s1">&#39;20px&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;backgroundColor&#39;</span><span class="p">:</span> <span class="s1">&#39;#f8f9fa&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;borderRadius&#39;</span><span class="p">:</span> <span class="s1">&#39;12px&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;padding&#39;</span><span class="p">:</span> <span class="s1">&#39;10px&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;boxShadow&#39;</span><span class="p">:</span> <span class="s1">&#39;0 2px 4px rgba(0,0,0,0.1)&#39;</span>
+        <span class="p">}),</span>
+        
+        <span class="c1"># Third row: Detailed statistics panel</span>
+        <span class="n">html</span><span class="o">.</span><span class="n">Div</span><span class="p">([</span>
+            <span class="n">html</span><span class="o">.</span><span class="n">Div</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;stats-panel-</span><span class="si">{</span><span class="n">clust</span><span class="o">.</span><span class="n">cluster_id</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">children</span><span class="o">=</span><span class="n">_create_default_stats_panel</span><span class="p">())</span>
+        <span class="p">],</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span>
+            <span class="s1">&#39;backgroundColor&#39;</span><span class="p">:</span> <span class="s1">&#39;#ffffff&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;border&#39;</span><span class="p">:</span> <span class="s1">&#39;1px solid #e2e8f0&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;borderRadius&#39;</span><span class="p">:</span> <span class="s1">&#39;12px&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;padding&#39;</span><span class="p">:</span> <span class="s1">&#39;20px&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;minHeight&#39;</span><span class="p">:</span> <span class="s1">&#39;180px&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;boxShadow&#39;</span><span class="p">:</span> <span class="s1">&#39;0 2px 4px rgba(0,0,0,0.1)&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;position&#39;</span><span class="p">:</span> <span class="s1">&#39;relative&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;zIndex&#39;</span><span class="p">:</span> <span class="s1">&#39;10&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;marginTop&#39;</span><span class="p">:</span> <span class="s1">&#39;20px&#39;</span>
+        <span class="p">})</span>
+    <span class="p">],</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span>
+        <span class="s1">&#39;position&#39;</span><span class="p">:</span> <span class="s1">&#39;relative&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;zIndex&#39;</span><span class="p">:</span> <span class="s1">&#39;1&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;padding&#39;</span><span class="p">:</span> <span class="s1">&#39;20px&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;backgroundColor&#39;</span><span class="p">:</span> <span class="s1">&#39;#f8f9fa&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;minHeight&#39;</span><span class="p">:</span> <span class="s1">&#39;auto&#39;</span>
+    <span class="p">})</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_create_representatives_tab_content</span><span class="p">(</span><span class="n">cluster_list</span><span class="p">,</span> <span class="n">colors</span><span class="p">,</span> <span class="n">representative_data</span><span class="p">,</span> <span class="n">cluster_data</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create content for representatives tab.&quot;&quot;&quot;</span>
+    
+    <span class="n">repr_fig</span> <span class="o">=</span> <span class="n">go</span><span class="o">.</span><span class="n">Figure</span><span class="p">()</span>
+    
+    <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">clust</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">cluster_list</span><span class="p">):</span>
+        <span class="n">repr_name</span> <span class="o">=</span> <span class="n">clust</span><span class="o">.</span><span class="n">best_representative_member</span><span class="o">.</span><span class="n">label</span>
+        <span class="n">repr_data</span> <span class="o">=</span> <span class="n">clust</span><span class="o">.</span><span class="n">best_representative_member</span><span class="o">.</span><span class="n">data</span>
+
+        <span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">repr_data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        
+        <span class="n">repr_id</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;repr_cluster_</span><span class="si">{</span><span class="n">clust</span><span class="o">.</span><span class="n">cluster_id</span><span class="si">}</span><span class="s2">&quot;</span>
+        
+        <span class="n">repr_fig</span><span class="o">.</span><span class="n">add_trace</span><span class="p">(</span><span class="n">go</span><span class="o">.</span><span class="n">Scatter</span><span class="p">(</span>
+            <span class="n">x</span><span class="o">=</span><span class="n">t</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">repr_data</span><span class="p">,</span>
+            <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;lines&#39;</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;Cluster </span><span class="si">{</span><span class="n">clust</span><span class="o">.</span><span class="n">cluster_id</span><span class="si">}</span><span class="s1"> Rep&#39;</span><span class="p">,</span>
+            <span class="n">line</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">width</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">colors</span><span class="p">[</span><span class="n">idx</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">colors</span><span class="p">)]),</span>
+            <span class="n">customdata</span><span class="o">=</span><span class="p">[</span><span class="n">repr_id</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="p">),</span>
+            <span class="n">hovertemplate</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;&lt;b&gt;Cluster </span><span class="si">{</span><span class="n">clust</span><span class="o">.</span><span class="n">cluster_id</span><span class="si">}</span><span class="s2"> Representative&lt;/b&gt;&lt;br&gt;Time: %</span><span class="se">{{</span><span class="s2">x</span><span class="se">}}</span><span class="s2">&lt;br&gt;Value: %</span><span class="se">{{</span><span class="s2">y:.3f</span><span class="se">}}</span><span class="s2">&lt;extra&gt;&lt;/extra&gt;&quot;</span>
+        <span class="p">))</span>
+    
+    <span class="n">repr_fig</span><span class="o">.</span><span class="n">update_layout</span><span class="p">(</span>
+        <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Cluster Representatives&quot;</span><span class="p">,</span>
+        <span class="n">height</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>
+        <span class="n">showlegend</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">clickmode</span><span class="o">=</span><span class="s1">&#39;event+select&#39;</span><span class="p">,</span>
+        <span class="n">plot_bgcolor</span><span class="o">=</span><span class="s1">&#39;#f8f9fa&#39;</span><span class="p">,</span>
+        <span class="n">paper_bgcolor</span><span class="o">=</span><span class="s1">&#39;#f8f9fa&#39;</span>
+    <span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">html</span><span class="o">.</span><span class="n">Div</span><span class="p">([</span>
+        <span class="n">html</span><span class="o">.</span><span class="n">Div</span><span class="p">([</span>
+            <span class="n">dcc</span><span class="o">.</span><span class="n">Graph</span><span class="p">(</span>
+                <span class="nb">id</span><span class="o">=</span><span class="s1">&#39;representatives-plot&#39;</span><span class="p">,</span>
+                <span class="n">figure</span><span class="o">=</span><span class="n">repr_fig</span><span class="p">,</span>
+                <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;height&#39;</span><span class="p">:</span> <span class="s1">&#39;500px&#39;</span><span class="p">},</span>
+                <span class="n">config</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;displayModeBar&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;responsive&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
+            <span class="p">)</span>
+        <span class="p">],</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span>
+            <span class="s1">&#39;backgroundColor&#39;</span><span class="p">:</span> <span class="s1">&#39;#f8f9fa&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;borderRadius&#39;</span><span class="p">:</span> <span class="s1">&#39;12px&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;padding&#39;</span><span class="p">:</span> <span class="s1">&#39;10px&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;boxShadow&#39;</span><span class="p">:</span> <span class="s1">&#39;0 2px 4px rgba(0,0,0,0.1)&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;marginBottom&#39;</span><span class="p">:</span> <span class="s1">&#39;20px&#39;</span>
+        <span class="p">}),</span>
+        <span class="n">html</span><span class="o">.</span><span class="n">Div</span><span class="p">([</span>
+            <span class="n">html</span><span class="o">.</span><span class="n">Div</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s1">&#39;representatives-info-panel&#39;</span><span class="p">,</span> <span class="n">children</span><span class="o">=</span><span class="n">_create_default_representatives_panel</span><span class="p">())</span>
+        <span class="p">],</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span>
+            <span class="s1">&#39;backgroundColor&#39;</span><span class="p">:</span> <span class="s1">&#39;#ffffff&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;border&#39;</span><span class="p">:</span> <span class="s1">&#39;1px solid #e2e8f0&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;borderRadius&#39;</span><span class="p">:</span> <span class="s1">&#39;12px&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;padding&#39;</span><span class="p">:</span> <span class="s1">&#39;20px&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;minHeight&#39;</span><span class="p">:</span> <span class="s1">&#39;200px&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;boxShadow&#39;</span><span class="p">:</span> <span class="s1">&#39;0 2px 4px rgba(0,0,0,0.1)&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;position&#39;</span><span class="p">:</span> <span class="s1">&#39;relative&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;zIndex&#39;</span><span class="p">:</span> <span class="s1">&#39;10&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;marginTop&#39;</span><span class="p">:</span> <span class="s1">&#39;20px&#39;</span>
+        <span class="p">})</span>
+    <span class="p">],</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span>
+        <span class="s1">&#39;position&#39;</span><span class="p">:</span> <span class="s1">&#39;relative&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;zIndex&#39;</span><span class="p">:</span> <span class="s1">&#39;1&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;padding&#39;</span><span class="p">:</span> <span class="s1">&#39;20px&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;backgroundColor&#39;</span><span class="p">:</span> <span class="s1">&#39;#f8f9fa&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;minHeight&#39;</span><span class="p">:</span> <span class="s1">&#39;auto&#39;</span>
+    <span class="p">})</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_create_default_stats_panel</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create default statistics panel.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">[</span>
+        <span class="n">html</span><span class="o">.</span><span class="n">H4</span><span class="p">(</span><span class="s2">&quot;Time Series Statistics&quot;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span>
+            <span class="s1">&#39;textAlign&#39;</span><span class="p">:</span> <span class="s1">&#39;center&#39;</span><span class="p">,</span> 
+            <span class="s1">&#39;marginBottom&#39;</span><span class="p">:</span> <span class="s1">&#39;20px&#39;</span><span class="p">,</span> 
+            <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;#1a202c&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;fontSize&#39;</span><span class="p">:</span> <span class="s1">&#39;18px&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;fontWeight&#39;</span><span class="p">:</span> <span class="s1">&#39;bold&#39;</span>
+        <span class="p">}),</span>
+        <span class="n">html</span><span class="o">.</span><span class="n">P</span><span class="p">(</span><span class="s2">&quot;Click on any time series line above to see detailed statistics&quot;</span><span class="p">,</span> 
+               <span class="n">style</span><span class="o">=</span><span class="p">{</span>
+                   <span class="s1">&#39;textAlign&#39;</span><span class="p">:</span> <span class="s1">&#39;center&#39;</span><span class="p">,</span> 
+                   <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;#7f8c8d&#39;</span><span class="p">,</span>
+                   <span class="s1">&#39;fontSize&#39;</span><span class="p">:</span> <span class="s1">&#39;14px&#39;</span><span class="p">,</span>
+                   <span class="s1">&#39;lineHeight&#39;</span><span class="p">:</span> <span class="s1">&#39;1.5&#39;</span>
+               <span class="p">})</span>
+    <span class="p">]</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_create_default_representatives_panel</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create default representatives information panel.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">[</span>
+        <span class="n">html</span><span class="o">.</span><span class="n">H4</span><span class="p">(</span><span class="s2">&quot;Cluster Information&quot;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span>
+            <span class="s1">&#39;textAlign&#39;</span><span class="p">:</span> <span class="s1">&#39;center&#39;</span><span class="p">,</span> 
+            <span class="s1">&#39;marginBottom&#39;</span><span class="p">:</span> <span class="s1">&#39;20px&#39;</span><span class="p">,</span> 
+            <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;#1a202c&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;fontSize&#39;</span><span class="p">:</span> <span class="s1">&#39;18px&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;fontWeight&#39;</span><span class="p">:</span> <span class="s1">&#39;bold&#39;</span>
+        <span class="p">}),</span>
+        <span class="n">html</span><span class="o">.</span><span class="n">P</span><span class="p">(</span><span class="s2">&quot;Click on any representative line above to see cluster information&quot;</span><span class="p">,</span> 
+               <span class="n">style</span><span class="o">=</span><span class="p">{</span>
+                   <span class="s1">&#39;textAlign&#39;</span><span class="p">:</span> <span class="s1">&#39;center&#39;</span><span class="p">,</span> 
+                   <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;#7f8c8d&#39;</span><span class="p">,</span>
+                   <span class="s1">&#39;fontSize&#39;</span><span class="p">:</span> <span class="s1">&#39;14px&#39;</span><span class="p">,</span>
+                   <span class="s1">&#39;lineHeight&#39;</span><span class="p">:</span> <span class="s1">&#39;1.5&#39;</span>
+               <span class="p">})</span>
+    <span class="p">]</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_create_cluster_callbacks</span><span class="p">(</span><span class="n">app</span><span class="p">,</span> <span class="n">cluster_id</span><span class="p">,</span> <span class="n">time_series_data</span><span class="p">,</span> <span class="n">cluster_data</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create callbacks for individual cluster tabs.&quot;&quot;&quot;</span>
+    
+    <span class="nd">@app</span><span class="o">.</span><span class="n">callback</span><span class="p">(</span>
+        <span class="n">Output</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;stats-panel-</span><span class="si">{</span><span class="n">cluster_id</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;children&#39;</span><span class="p">),</span>
+        <span class="p">[</span><span class="n">Input</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;all-series-plot-</span><span class="si">{</span><span class="n">cluster_id</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;clickData&#39;</span><span class="p">)]</span>
+    <span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_stats_panel</span><span class="p">(</span><span class="n">clickData</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">clickData</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">_create_default_stats_panel</span><span class="p">()</span>
+        
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">point</span> <span class="o">=</span> <span class="n">clickData</span><span class="p">[</span><span class="s1">&#39;points&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">customdata</span> <span class="o">=</span> <span class="n">point</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;customdata&#39;</span><span class="p">)</span>
+            
+            <span class="k">if</span> <span class="n">customdata</span> <span class="ow">and</span> <span class="n">customdata</span> <span class="ow">in</span> <span class="n">time_series_data</span><span class="p">:</span>
+                <span class="n">ts_info</span> <span class="o">=</span> <span class="n">time_series_data</span><span class="p">[</span><span class="n">customdata</span><span class="p">]</span>
+                
+                <span class="c1"># Print information to terminal</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Time Series Clicked:&quot;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Label: </span><span class="si">{</span><span class="n">ts_info</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Data: </span><span class="si">{</span><span class="n">ts_info</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Feature vector: </span><span class="si">{</span><span class="n">ts_info</span><span class="p">[</span><span class="s1">&#39;feature_vector&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cluster id: </span><span class="si">{</span><span class="n">ts_info</span><span class="p">[</span><span class="s1">&#39;cluster_id&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;-&quot;</span> <span class="o">*</span> <span class="mi">80</span><span class="p">)</span>
+                
+                <span class="k">return</span> <span class="p">[</span>
+                    <span class="n">html</span><span class="o">.</span><span class="n">Div</span><span class="p">([</span>
+                        <span class="c1"># Left column</span>
+                        <span class="n">html</span><span class="o">.</span><span class="n">Div</span><span class="p">([</span>
+                            <span class="n">html</span><span class="o">.</span><span class="n">H4</span><span class="p">(</span><span class="s2">&quot;Time Series Information&quot;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span>
+                                <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;#34495e&#39;</span><span class="p">,</span> 
+                                <span class="s1">&#39;marginBottom&#39;</span><span class="p">:</span> <span class="s1">&#39;15px&#39;</span><span class="p">,</span>
+                                <span class="s1">&#39;fontSize&#39;</span><span class="p">:</span> <span class="s1">&#39;16px&#39;</span><span class="p">,</span>
+                                <span class="s1">&#39;fontWeight&#39;</span><span class="p">:</span> <span class="s1">&#39;bold&#39;</span>
+                            <span class="p">}),</span>
+                            <span class="n">html</span><span class="o">.</span><span class="n">P</span><span class="p">([</span><span class="n">html</span><span class="o">.</span><span class="n">Strong</span><span class="p">(</span><span class="s2">&quot;Label: &quot;</span><span class="p">),</span> <span class="n">ts_info</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]],</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span>
+                                <span class="s1">&#39;marginBottom&#39;</span><span class="p">:</span> <span class="s1">&#39;10px&#39;</span><span class="p">,</span>
+                                <span class="s1">&#39;fontSize&#39;</span><span class="p">:</span> <span class="s1">&#39;14px&#39;</span><span class="p">,</span>
+                                <span class="s1">&#39;lineHeight&#39;</span><span class="p">:</span> <span class="s1">&#39;1.4&#39;</span>
+                            <span class="p">}),</span>
+                            <span class="n">html</span><span class="o">.</span><span class="n">P</span><span class="p">([</span><span class="n">html</span><span class="o">.</span><span class="n">Strong</span><span class="p">(</span><span class="s2">&quot;Length: &quot;</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">ts_info</span><span class="p">[</span><span class="s1">&#39;length&#39;</span><span class="p">])],</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span>
+                                <span class="s1">&#39;marginBottom&#39;</span><span class="p">:</span> <span class="s1">&#39;10px&#39;</span><span class="p">,</span>
+                                <span class="s1">&#39;fontSize&#39;</span><span class="p">:</span> <span class="s1">&#39;14px&#39;</span><span class="p">,</span>
+                                <span class="s1">&#39;lineHeight&#39;</span><span class="p">:</span> <span class="s1">&#39;1.4&#39;</span>
+                            <span class="p">}),</span>
+                            <span class="n">html</span><span class="o">.</span><span class="n">P</span><span class="p">([</span><span class="n">html</span><span class="o">.</span><span class="n">Strong</span><span class="p">(</span><span class="s2">&quot;Mean: &quot;</span><span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">ts_info</span><span class="p">[</span><span class="s1">&#39;mean&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">],</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span>
+                                <span class="s1">&#39;marginBottom&#39;</span><span class="p">:</span> <span class="s1">&#39;10px&#39;</span><span class="p">,</span>
+                                <span class="s1">&#39;fontSize&#39;</span><span class="p">:</span> <span class="s1">&#39;14px&#39;</span><span class="p">,</span>
+                                <span class="s1">&#39;lineHeight&#39;</span><span class="p">:</span> <span class="s1">&#39;1.4&#39;</span>
+                            <span class="p">}),</span>
+                            <span class="n">html</span><span class="o">.</span><span class="n">P</span><span class="p">([</span><span class="n">html</span><span class="o">.</span><span class="n">Strong</span><span class="p">(</span><span class="s2">&quot;Representative: &quot;</span><span class="p">),</span> <span class="s2">&quot;Yes&quot;</span> <span class="k">if</span> <span class="n">ts_info</span><span class="p">[</span><span class="s1">&#39;is_representative&#39;</span><span class="p">]</span> <span class="k">else</span> <span class="s2">&quot;No&quot;</span><span class="p">],</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span>
+                                <span class="s1">&#39;marginBottom&#39;</span><span class="p">:</span> <span class="s1">&#39;8px&#39;</span><span class="p">,</span>
+                                <span class="s1">&#39;fontSize&#39;</span><span class="p">:</span> <span class="s1">&#39;14px&#39;</span><span class="p">,</span>
+                                <span class="s1">&#39;lineHeight&#39;</span><span class="p">:</span> <span class="s1">&#39;1.4&#39;</span>
+                            <span class="p">})</span>
+                        <span class="p">],</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span>
+                            <span class="s1">&#39;width&#39;</span><span class="p">:</span> <span class="s1">&#39;35%&#39;</span><span class="p">,</span> 
+                            <span class="s1">&#39;flexShrink&#39;</span><span class="p">:</span> <span class="s1">&#39;0&#39;</span><span class="p">,</span>
+                            <span class="s1">&#39;paddingRight&#39;</span><span class="p">:</span> <span class="s1">&#39;15px&#39;</span>
+                        <span class="p">}),</span>
+                        
+                        <span class="c1"># Right column</span>
+                        <span class="n">html</span><span class="o">.</span><span class="n">Div</span><span class="p">([</span>
+                            <span class="n">html</span><span class="o">.</span><span class="n">H4</span><span class="p">(</span><span class="s2">&quot;Statistical Details&quot;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span>
+                                <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;#34495e&#39;</span><span class="p">,</span> 
+                                <span class="s1">&#39;marginBottom&#39;</span><span class="p">:</span> <span class="s1">&#39;15px&#39;</span><span class="p">,</span>
+                                <span class="s1">&#39;fontSize&#39;</span><span class="p">:</span> <span class="s1">&#39;16px&#39;</span><span class="p">,</span>
+                                <span class="s1">&#39;fontWeight&#39;</span><span class="p">:</span> <span class="s1">&#39;bold&#39;</span>
+                            <span class="p">}),</span>
+                            <span class="n">html</span><span class="o">.</span><span class="n">P</span><span class="p">([</span><span class="n">html</span><span class="o">.</span><span class="n">Strong</span><span class="p">(</span><span class="s2">&quot;Std Dev: &quot;</span><span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">ts_info</span><span class="p">[</span><span class="s1">&#39;std&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">],</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span>
+                                <span class="s1">&#39;marginBottom&#39;</span><span class="p">:</span> <span class="s1">&#39;10px&#39;</span><span class="p">,</span>
+                                <span class="s1">&#39;fontSize&#39;</span><span class="p">:</span> <span class="s1">&#39;14px&#39;</span><span class="p">,</span>
+                                <span class="s1">&#39;lineHeight&#39;</span><span class="p">:</span> <span class="s1">&#39;1.4&#39;</span>
+                            <span class="p">}),</span>
+                            <span class="n">html</span><span class="o">.</span><span class="n">P</span><span class="p">([</span><span class="n">html</span><span class="o">.</span><span class="n">Strong</span><span class="p">(</span><span class="s2">&quot;Max Value: &quot;</span><span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">ts_info</span><span class="p">[</span><span class="s1">&#39;max&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">],</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span>
+                                <span class="s1">&#39;marginBottom&#39;</span><span class="p">:</span> <span class="s1">&#39;10px&#39;</span><span class="p">,</span>
+                                <span class="s1">&#39;fontSize&#39;</span><span class="p">:</span> <span class="s1">&#39;14px&#39;</span><span class="p">,</span>
+                                <span class="s1">&#39;lineHeight&#39;</span><span class="p">:</span> <span class="s1">&#39;1.4&#39;</span>
+                            <span class="p">}),</span>
+                            <span class="n">html</span><span class="o">.</span><span class="n">P</span><span class="p">([</span><span class="n">html</span><span class="o">.</span><span class="n">Strong</span><span class="p">(</span><span class="s2">&quot;Min Value: &quot;</span><span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">ts_info</span><span class="p">[</span><span class="s1">&#39;min&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">],</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span>
+                                <span class="s1">&#39;marginBottom&#39;</span><span class="p">:</span> <span class="s1">&#39;10px&#39;</span><span class="p">,</span>
+                                <span class="s1">&#39;fontSize&#39;</span><span class="p">:</span> <span class="s1">&#39;14px&#39;</span><span class="p">,</span>
+                                <span class="s1">&#39;lineHeight&#39;</span><span class="p">:</span> <span class="s1">&#39;1.4&#39;</span>
+                            <span class="p">}),</span>
+                            <span class="n">html</span><span class="o">.</span><span class="n">P</span><span class="p">([</span><span class="n">html</span><span class="o">.</span><span class="n">Strong</span><span class="p">(</span><span class="s2">&quot;Range: &quot;</span><span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">ts_info</span><span class="p">[</span><span class="s1">&#39;max&#39;</span><span class="p">]</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">ts_info</span><span class="p">[</span><span class="s1">&#39;min&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">],</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span>
+                                <span class="s1">&#39;marginBottom&#39;</span><span class="p">:</span> <span class="s1">&#39;8px&#39;</span><span class="p">,</span>
+                                <span class="s1">&#39;fontSize&#39;</span><span class="p">:</span> <span class="s1">&#39;14px&#39;</span><span class="p">,</span>
+                                <span class="s1">&#39;lineHeight&#39;</span><span class="p">:</span> <span class="s1">&#39;1.4&#39;</span>
+                            <span class="p">})</span>
+                        <span class="p">],</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span>
+                            <span class="s1">&#39;width&#39;</span><span class="p">:</span> <span class="s1">&#39;62%&#39;</span><span class="p">,</span> 
+                            <span class="s1">&#39;flexShrink&#39;</span><span class="p">:</span> <span class="s1">&#39;0&#39;</span><span class="p">,</span>
+                            <span class="s1">&#39;marginLeft&#39;</span><span class="p">:</span> <span class="s1">&#39;3%&#39;</span><span class="p">,</span>
+                            <span class="s1">&#39;paddingLeft&#39;</span><span class="p">:</span> <span class="s1">&#39;50px&#39;</span><span class="p">,</span>
+                            <span class="s1">&#39;borderLeft&#39;</span><span class="p">:</span> <span class="s1">&#39;1px solid #e2e8f0&#39;</span>
+                        <span class="p">})</span>
+                    <span class="p">],</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span>
+                        <span class="s1">&#39;position&#39;</span><span class="p">:</span> <span class="s1">&#39;relative&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;zIndex&#39;</span><span class="p">:</span> <span class="s1">&#39;1&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;display&#39;</span><span class="p">:</span> <span class="s1">&#39;flex&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;flexDirection&#39;</span><span class="p">:</span> <span class="s1">&#39;row&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;alignItems&#39;</span><span class="p">:</span> <span class="s1">&#39;flex-start&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;width&#39;</span><span class="p">:</span> <span class="s1">&#39;100%&#39;</span>
+                    <span class="p">})</span>
+                <span class="p">]</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">KeyError</span><span class="p">,</span> <span class="ne">IndexError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">):</span>
+            <span class="k">return</span> <span class="p">[</span>
+                <span class="n">html</span><span class="o">.</span><span class="n">P</span><span class="p">(</span><span class="s2">&quot;Error: Unable to display statistics for the selected time series.&quot;</span><span class="p">,</span> 
+                       <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;textAlign&#39;</span><span class="p">:</span> <span class="s1">&#39;center&#39;</span><span class="p">,</span> <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;#e74c3c&#39;</span><span class="p">})</span>
+            <span class="p">]</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_create_representatives_callback</span><span class="p">(</span><span class="n">app</span><span class="p">,</span> <span class="n">representative_data</span><span class="p">,</span> <span class="n">cluster_data</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create callback for representatives tab.&quot;&quot;&quot;</span>
+    
+    <span class="nd">@app</span><span class="o">.</span><span class="n">callback</span><span class="p">(</span>
+        <span class="n">Output</span><span class="p">(</span><span class="s1">&#39;representatives-info-panel&#39;</span><span class="p">,</span> <span class="s1">&#39;children&#39;</span><span class="p">),</span>
+        <span class="p">[</span><span class="n">Input</span><span class="p">(</span><span class="s1">&#39;representatives-plot&#39;</span><span class="p">,</span> <span class="s1">&#39;clickData&#39;</span><span class="p">)]</span>
+    <span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_representatives_panel</span><span class="p">(</span><span class="n">clickData</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">clickData</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">_create_default_representatives_panel</span><span class="p">()</span>
+        
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">point</span> <span class="o">=</span> <span class="n">clickData</span><span class="p">[</span><span class="s1">&#39;points&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">customdata</span> <span class="o">=</span> <span class="n">point</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;customdata&#39;</span><span class="p">)</span>
+            
+            <span class="k">if</span> <span class="n">customdata</span> <span class="ow">and</span> <span class="n">customdata</span> <span class="ow">in</span> <span class="n">representative_data</span><span class="p">:</span>
+                <span class="n">repr_info</span> <span class="o">=</span> <span class="n">representative_data</span><span class="p">[</span><span class="n">customdata</span><span class="p">]</span>
+                <span class="n">cluster_info</span> <span class="o">=</span> <span class="n">cluster_data</span><span class="p">[</span><span class="n">repr_info</span><span class="p">[</span><span class="s1">&#39;cluster_id&#39;</span><span class="p">]]</span>
+                
+                <span class="c1"># Print information to terminal</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Representative Time Series Clicked:&quot;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Label: </span><span class="si">{</span><span class="n">repr_info</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Data: </span><span class="si">{</span><span class="n">repr_info</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Feature vector: </span><span class="si">{</span><span class="n">repr_info</span><span class="p">[</span><span class="s1">&#39;feature_vector&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cluster id: </span><span class="si">{</span><span class="n">repr_info</span><span class="p">[</span><span class="s1">&#39;cluster_id&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;-&quot;</span> <span class="o">*</span> <span class="mi">80</span><span class="p">)</span>
+                
+                <span class="k">return</span> <span class="p">[</span>
+                    <span class="n">html</span><span class="o">.</span><span class="n">Div</span><span class="p">([</span>
+                        <span class="c1"># Cluster details</span>
+                        <span class="n">html</span><span class="o">.</span><span class="n">Div</span><span class="p">([</span>
+                            <span class="n">html</span><span class="o">.</span><span class="n">Div</span><span class="p">([</span>
+                                <span class="n">html</span><span class="o">.</span><span class="n">H4</span><span class="p">(</span><span class="s2">&quot;Cluster Details&quot;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span>
+                                    <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;#34495e&#39;</span><span class="p">,</span> 
+                                    <span class="s1">&#39;marginBottom&#39;</span><span class="p">:</span> <span class="s1">&#39;15px&#39;</span><span class="p">,</span>
+                                    <span class="s1">&#39;fontSize&#39;</span><span class="p">:</span> <span class="s1">&#39;16px&#39;</span><span class="p">,</span>
+                                    <span class="s1">&#39;fontWeight&#39;</span><span class="p">:</span> <span class="s1">&#39;bold&#39;</span>
+                                <span class="p">}),</span>
+                                <span class="n">html</span><span class="o">.</span><span class="n">P</span><span class="p">([</span><span class="n">html</span><span class="o">.</span><span class="n">Strong</span><span class="p">(</span><span class="s2">&quot;Cluster ID: &quot;</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">cluster_info</span><span class="p">[</span><span class="s1">&#39;cluster_id&#39;</span><span class="p">])],</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span>
+                                    <span class="s1">&#39;marginBottom&#39;</span><span class="p">:</span> <span class="s1">&#39;10px&#39;</span><span class="p">,</span>
+                                    <span class="s1">&#39;fontSize&#39;</span><span class="p">:</span> <span class="s1">&#39;14px&#39;</span><span class="p">,</span>
+                                    <span class="s1">&#39;lineHeight&#39;</span><span class="p">:</span> <span class="s1">&#39;1.4&#39;</span>
+                                <span class="p">}),</span>
+                                <span class="n">html</span><span class="o">.</span><span class="n">P</span><span class="p">([</span><span class="n">html</span><span class="o">.</span><span class="n">Strong</span><span class="p">(</span><span class="s2">&quot;Total Members: &quot;</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">cluster_info</span><span class="p">[</span><span class="s1">&#39;number_of_members&#39;</span><span class="p">])],</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span>
+                                    <span class="s1">&#39;marginBottom&#39;</span><span class="p">:</span> <span class="s1">&#39;10px&#39;</span><span class="p">,</span>
+                                    <span class="s1">&#39;fontSize&#39;</span><span class="p">:</span> <span class="s1">&#39;14px&#39;</span><span class="p">,</span>
+                                    <span class="s1">&#39;lineHeight&#39;</span><span class="p">:</span> <span class="s1">&#39;1.4&#39;</span>
+                                <span class="p">}),</span>
+                                <span class="n">html</span><span class="o">.</span><span class="n">P</span><span class="p">([</span><span class="n">html</span><span class="o">.</span><span class="n">Strong</span><span class="p">(</span><span class="s2">&quot;Representative Label: &quot;</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">cluster_info</span><span class="p">[</span><span class="s1">&#39;best_representative_member&#39;</span><span class="p">])],</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span>
+                                    <span class="s1">&#39;marginBottom&#39;</span><span class="p">:</span> <span class="s1">&#39;8px&#39;</span><span class="p">,</span>
+                                    <span class="s1">&#39;fontSize&#39;</span><span class="p">:</span> <span class="s1">&#39;14px&#39;</span><span class="p">,</span>
+                                    <span class="s1">&#39;lineHeight&#39;</span><span class="p">:</span> <span class="s1">&#39;1.4&#39;</span><span class="p">,</span>
+                                    <span class="s1">&#39;wordBreak&#39;</span><span class="p">:</span> <span class="s1">&#39;break-word&#39;</span>
+                                <span class="p">})</span>
+                            <span class="p">],</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span>
+                                <span class="s1">&#39;width&#39;</span><span class="p">:</span> <span class="s1">&#39;48%&#39;</span><span class="p">,</span> 
+                                <span class="s1">&#39;flexShrink&#39;</span><span class="p">:</span> <span class="s1">&#39;0&#39;</span><span class="p">,</span>
+                                <span class="s1">&#39;paddingRight&#39;</span><span class="p">:</span> <span class="s1">&#39;15px&#39;</span>
+                            <span class="p">}),</span>
+                            
+                            <span class="n">html</span><span class="o">.</span><span class="n">Div</span><span class="p">([</span>
+                                <span class="n">html</span><span class="o">.</span><span class="n">H4</span><span class="p">(</span><span class="s2">&quot;Statistical Details&quot;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span>
+                                    <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;#34495e&#39;</span><span class="p">,</span> 
+                                    <span class="s1">&#39;marginBottom&#39;</span><span class="p">:</span> <span class="s1">&#39;15px&#39;</span><span class="p">,</span>
+                                    <span class="s1">&#39;fontSize&#39;</span><span class="p">:</span> <span class="s1">&#39;16px&#39;</span><span class="p">,</span>
+                                    <span class="s1">&#39;fontWeight&#39;</span><span class="p">:</span> <span class="s1">&#39;bold&#39;</span>
+                                <span class="p">}),</span>
+                                <span class="n">html</span><span class="o">.</span><span class="n">P</span><span class="p">([</span><span class="n">html</span><span class="o">.</span><span class="n">Strong</span><span class="p">(</span><span class="s2">&quot;Length: &quot;</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">repr_info</span><span class="p">[</span><span class="s1">&#39;length&#39;</span><span class="p">])],</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span>
+                                    <span class="s1">&#39;marginBottom&#39;</span><span class="p">:</span> <span class="s1">&#39;10px&#39;</span><span class="p">,</span>
+                                    <span class="s1">&#39;fontSize&#39;</span><span class="p">:</span> <span class="s1">&#39;14px&#39;</span><span class="p">,</span>
+                                    <span class="s1">&#39;lineHeight&#39;</span><span class="p">:</span> <span class="s1">&#39;1.4&#39;</span>
+                                <span class="p">}),</span>
+                                <span class="n">html</span><span class="o">.</span><span class="n">P</span><span class="p">([</span><span class="n">html</span><span class="o">.</span><span class="n">Strong</span><span class="p">(</span><span class="s2">&quot;Mean: &quot;</span><span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">repr_info</span><span class="p">[</span><span class="s1">&#39;mean&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">],</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span>
+                                    <span class="s1">&#39;marginBottom&#39;</span><span class="p">:</span> <span class="s1">&#39;10px&#39;</span><span class="p">,</span>
+                                    <span class="s1">&#39;fontSize&#39;</span><span class="p">:</span> <span class="s1">&#39;14px&#39;</span><span class="p">,</span>
+                                    <span class="s1">&#39;lineHeight&#39;</span><span class="p">:</span> <span class="s1">&#39;1.4&#39;</span>
+                                <span class="p">}),</span>
+                                <span class="n">html</span><span class="o">.</span><span class="n">P</span><span class="p">([</span><span class="n">html</span><span class="o">.</span><span class="n">Strong</span><span class="p">(</span><span class="s2">&quot;Std Dev: &quot;</span><span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">repr_info</span><span class="p">[</span><span class="s1">&#39;std&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">],</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span>
+                                    <span class="s1">&#39;marginBottom&#39;</span><span class="p">:</span> <span class="s1">&#39;10px&#39;</span><span class="p">,</span>
+                                    <span class="s1">&#39;fontSize&#39;</span><span class="p">:</span> <span class="s1">&#39;14px&#39;</span><span class="p">,</span>
+                                    <span class="s1">&#39;lineHeight&#39;</span><span class="p">:</span> <span class="s1">&#39;1.4&#39;</span>
+                                <span class="p">})</span>
+                            <span class="p">],</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span>
+                                <span class="s1">&#39;width&#39;</span><span class="p">:</span> <span class="s1">&#39;48%&#39;</span><span class="p">,</span> 
+                                <span class="s1">&#39;flexShrink&#39;</span><span class="p">:</span> <span class="s1">&#39;0&#39;</span><span class="p">,</span>
+                                <span class="s1">&#39;marginLeft&#39;</span><span class="p">:</span> <span class="s1">&#39;4%&#39;</span><span class="p">,</span>
+                                <span class="s1">&#39;paddingLeft&#39;</span><span class="p">:</span> <span class="s1">&#39;50px&#39;</span><span class="p">,</span>
+                                <span class="s1">&#39;borderLeft&#39;</span><span class="p">:</span> <span class="s1">&#39;1px solid #e2e8f0&#39;</span>
+                            <span class="p">})</span>
+                        <span class="p">],</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span>
+                            <span class="s1">&#39;display&#39;</span><span class="p">:</span> <span class="s1">&#39;flex&#39;</span><span class="p">,</span>
+                            <span class="s1">&#39;flexDirection&#39;</span><span class="p">:</span> <span class="s1">&#39;row&#39;</span><span class="p">,</span>
+                            <span class="s1">&#39;alignItems&#39;</span><span class="p">:</span> <span class="s1">&#39;flex-start&#39;</span><span class="p">,</span>
+                            <span class="s1">&#39;width&#39;</span><span class="p">:</span> <span class="s1">&#39;100%&#39;</span>
+                        <span class="p">})</span>
+                    <span class="p">],</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span>
+                        <span class="s1">&#39;position&#39;</span><span class="p">:</span> <span class="s1">&#39;relative&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;zIndex&#39;</span><span class="p">:</span> <span class="s1">&#39;1&#39;</span>
+                    <span class="p">})</span>
+                <span class="p">]</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">KeyError</span><span class="p">,</span> <span class="ne">IndexError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">):</span>
+            <span class="k">return</span> <span class="p">[</span>
+                <span class="n">html</span><span class="o">.</span><span class="n">P</span><span class="p">(</span><span class="s2">&quot;Error: Unable to display information for the selected representative.&quot;</span><span class="p">,</span> 
+                       <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;textAlign&#39;</span><span class="p">:</span> <span class="s1">&#39;center&#39;</span><span class="p">,</span> <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;#e74c3c&#39;</span><span class="p">})</span>
+            <span class="p">]</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Sesdyn Geeks.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
