@@ -84,11 +84,11 @@
 <h1>Basic_A<a class="headerlink" href="#Basic_A" title="Link to this heading"></a></h1>
 <p>3,4,8,9. linelar kütüphane oluşturulmak istendiği zaman silinmeli</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
-<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;/Users/emirsener/Desktop/ts-clustering&quot;</span><span class="p">)</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;/Users/emirsener/Desktop/Clusterer&quot;</span><span class="p">)</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">simclstr.clusterer</span><span class="w"> </span><span class="kn">import</span> <span class="n">perform_clustering</span><span class="p">,</span> <span class="n">read_time_series</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">simclstr.plotting</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_clusters</span>
@@ -104,24 +104,22 @@
 </pre></div>
 </div>
 </div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/basicA_basicA_notebook_1_0.png" src="../_images/basicA_basicA_notebook_1_0.png" />
+</div>
+</div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">TypeError</span>                                 Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[6]</span><span class="ansi-green-fg">, line 12</span>
-<span class="ansi-green-fg">      8</span> model_path_vensim = os.path.expanduser(<span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">~/Desktop/SESDYN_Basic_A/Basic_A_Vensim.xlsx</span><span class="ansi-yellow-fg">&#39;</span>)
-<span class="ansi-green-fg">     10</span> read_data_vensim = read_time_series(model_path_vensim)
-<span class="ansi-green-fg">---&gt; </span><span class="ansi-green-fg">12</span> clustering_results_vensim = <span class="ansi-yellow-bg">perform_clustering</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">read_data_vensim</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">cMethod</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-fg ansi-yellow-bg">&#39;</span><span class="ansi-yellow-fg ansi-yellow-bg">maxclust</span><span class="ansi-yellow-fg ansi-yellow-bg">&#39;</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">cValue</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-bg"> </span><span class="ansi-green-fg ansi-yellow-bg">6</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">plotDendrogram</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-bg ansi-bold" style="color: rgb(0,135,0)">True</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">transform</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-fg ansi-yellow-bg">&#39;</span><span class="ansi-yellow-fg ansi-yellow-bg">standardize</span><span class="ansi-yellow-fg ansi-yellow-bg">&#39;</span><span class="ansi-yellow-bg">)</span>
-<span class="ansi-green-fg">     14</span> plot_clusters(clustering_results_vensim[<span class="ansi-green-fg">1</span>], <span class="ansi-yellow-fg">&#39;</span><span class="ansi-yellow-fg">pattern_dtw</span><span class="ansi-yellow-fg">&#39;</span>)
-
-<span class="ansi-red-fg">TypeError</span>: perform_clustering() got an unexpected keyword argument &#39;transform&#39;
-</pre></div></div>
+<img alt="../_images/basicA_basicA_notebook_1_1.png" src="../_images/basicA_basicA_notebook_1_1.png" />
+</div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model_path_stellaff</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="s1">&#39;~/Desktop/SESDYN_Basic_A/Basic_A_StellaFF.xlsx&#39;</span><span class="p">)</span>
@@ -149,7 +147,7 @@
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model_path_stella2</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="s1">&#39;~/Desktop/SESDYN_Basic_A/Basic_A_Stella2.xlsx&#39;</span><span class="p">)</span>
