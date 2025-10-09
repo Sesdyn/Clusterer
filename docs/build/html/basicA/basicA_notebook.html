@@ -88,7 +88,7 @@
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
-<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;/Users/emirsener/Desktop/ts-clustering&quot;</span><span class="p">)</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;/Users/emirsener/Desktop/Clusterer&quot;</span><span class="p">)</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">simclstr.clusterer</span><span class="w"> </span><span class="kn">import</span> <span class="n">perform_clustering</span><span class="p">,</span> <span class="n">read_time_series</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">simclstr.plotting</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_clusters</span>
@@ -98,7 +98,7 @@
 
 <span class="n">read_data_vensim</span> <span class="o">=</span> <span class="n">read_time_series</span><span class="p">(</span><span class="n">model_path_vensim</span><span class="p">)</span>
 
-<span class="n">clustering_results_vensim</span> <span class="o">=</span> <span class="n">perform_clustering</span><span class="p">(</span><span class="n">read_data_vensim</span><span class="p">,</span> <span class="n">cMethod</span><span class="o">=</span><span class="s1">&#39;maxclust&#39;</span><span class="p">,</span> <span class="n">cValue</span> <span class="o">=</span> <span class="mi">6</span><span class="p">,</span> <span class="n">plotDendrogram</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">clustering_results_vensim</span> <span class="o">=</span> <span class="n">perform_clustering</span><span class="p">(</span><span class="n">read_data_vensim</span><span class="p">,</span> <span class="n">cMethod</span><span class="o">=</span><span class="s1">&#39;maxclust&#39;</span><span class="p">,</span> <span class="n">cValue</span> <span class="o">=</span> <span class="mi">6</span><span class="p">,</span> <span class="n">plotDendrogram</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="s1">&#39;normalize&#39;</span><span class="p">)</span>
 
 <span class="n">plot_clusters</span><span class="p">(</span><span class="n">clustering_results_vensim</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;pattern_dtw&#39;</span><span class="p">)</span>
 </pre></div>
@@ -126,7 +126,7 @@
 
 <span class="n">read_data_stellaff</span> <span class="o">=</span> <span class="n">read_time_series</span><span class="p">(</span><span class="n">model_path_stellaff</span><span class="p">)</span>
 
-<span class="n">clustering_results_stellaff</span> <span class="o">=</span> <span class="n">perform_clustering</span><span class="p">(</span><span class="n">read_data_stellaff</span><span class="p">,</span> <span class="n">cMethod</span><span class="o">=</span><span class="s1">&#39;maxclust&#39;</span><span class="p">,</span> <span class="n">cValue</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span> <span class="n">plotDendrogram</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">clustering_results_stellaff</span> <span class="o">=</span> <span class="n">perform_clustering</span><span class="p">(</span><span class="n">read_data_stellaff</span><span class="p">,</span> <span class="n">cMethod</span><span class="o">=</span><span class="s1">&#39;maxclust&#39;</span><span class="p">,</span> <span class="n">cValue</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span> <span class="n">plotDendrogram</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="s1">&#39;normalize&#39;</span><span class="p">)</span>
 
 <span class="n">plot_clusters</span><span class="p">(</span><span class="n">clustering_results_stellaff</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;pattern_dtw&#39;</span><span class="p">)</span>
 </pre></div>
@@ -154,7 +154,7 @@
 
 <span class="n">read_data_stella2</span> <span class="o">=</span> <span class="n">read_time_series</span><span class="p">(</span><span class="n">model_path_stella2</span><span class="p">)</span>
 
-<span class="n">clustering_results_stella2</span> <span class="o">=</span> <span class="n">perform_clustering</span><span class="p">(</span><span class="n">read_data_stella2</span><span class="p">,</span> <span class="n">cMethod</span><span class="o">=</span><span class="s1">&#39;maxclust&#39;</span><span class="p">,</span> <span class="n">cValue</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span> <span class="n">plotDendrogram</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">clustering_results_stella2</span> <span class="o">=</span> <span class="n">perform_clustering</span><span class="p">(</span><span class="n">read_data_stella2</span><span class="p">,</span> <span class="n">cMethod</span><span class="o">=</span><span class="s1">&#39;maxclust&#39;</span><span class="p">,</span> <span class="n">cValue</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span> <span class="n">plotDendrogram</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="s1">&#39;normalize&#39;</span><span class="p">)</span>
 
 <span class="n">plot_clusters</span><span class="p">(</span><span class="n">clustering_results_stella2</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;pattern_dtw&#39;</span><span class="p">)</span>
 </pre></div>

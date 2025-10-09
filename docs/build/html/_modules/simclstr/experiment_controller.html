@@ -92,52 +92,10 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">xlsxwriter</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.plotting</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_clusters</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">.clusterer</span><span class="w"> </span><span class="kn">import</span> <span class="n">read_time_series</span><span class="p">,</span> <span class="n">perform_clustering</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.clusterer</span><span class="w"> </span><span class="kn">import</span> <span class="n">read_time_series</span><span class="p">,</span> <span class="n">perform_clustering</span><span class="p">,</span> <span class="n">_normalize_data</span><span class="p">,</span> <span class="n">_standardize_data</span>
 
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">.clusterer</span><span class="w"> </span><span class="kn">import</span> <span class="n">TimeSeries</span>
-
-
-<span class="k">def</span><span class="w"> </span><span class="nf">_normalize_data</span><span class="p">(</span><span class="n">list_of_ts_objects</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="s1">&#39;TimeSeries&#39;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="s1">&#39;TimeSeries&#39;</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Compute the normalized version of the time-series data such that</span>
-<span class="sd">    y_i = (x_i - min(x)) / (max(x) - min(x))</span>
-<span class="sd">    </span>
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    list_of_ts_objects : List[&#39;TimeSeries&#39;]</span>
-<span class="sd">        List of TimeSeries objects</span>
-<span class="sd">        </span>
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    List[&#39;TimeSeries&#39;]</span>
-<span class="sd">        List of TimeSeries objects</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">for</span> <span class="n">each_ts</span> <span class="ow">in</span> <span class="n">list_of_ts_objects</span><span class="p">:</span>
-        <span class="n">each_ts</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="p">(</span><span class="n">each_ts</span><span class="o">.</span><span class="n">data</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">each_ts</span><span class="o">.</span><span class="n">data</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">each_ts</span><span class="o">.</span><span class="n">data</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">each_ts</span><span class="o">.</span><span class="n">data</span><span class="p">))</span>
-
-    <span class="k">return</span> <span class="n">list_of_ts_objects</span>
-
-
-<span class="k">def</span><span class="w"> </span><span class="nf">_standardize_data</span><span class="p">(</span><span class="n">list_of_ts_objects</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="s1">&#39;TimeSeries&#39;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="s1">&#39;TimeSeries&#39;</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Compute the standardized version of the time-series data such that</span>
-<span class="sd">    y_i = (x_i - mean(x)) / std(x)</span>
-<span class="sd">    </span>
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    list_of_ts_objects : List[&#39;TimeSeries&#39;]</span>
-<span class="sd">        List of TimeSeries objects</span>
-<span class="sd">        </span>
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    List[&#39;TimeSeries&#39;]</span>
-<span class="sd">        List of TimeSeries objects</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">for</span> <span class="n">each_ts</span> <span class="ow">in</span> <span class="n">list_of_ts_objects</span><span class="p">:</span>
-        <span class="n">each_ts</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="p">(</span><span class="n">each_ts</span><span class="o">.</span><span class="n">data</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">each_ts</span><span class="o">.</span><span class="n">data</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">each_ts</span><span class="o">.</span><span class="n">data</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">each_ts</span><span class="o">.</span><span class="n">data</span><span class="p">))</span>
-
-    <span class="k">return</span> <span class="n">list_of_ts_objects</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_compare_clusterings</span><span class="p">(</span><span class="n">list_of_ts_objects</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="s1">&#39;TimeSeries&#39;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>

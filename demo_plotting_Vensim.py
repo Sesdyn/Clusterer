@@ -17,7 +17,7 @@ def main():
 
     simulation_results = simulate_from_vensim(model_path, parameter_set, output_of_interest)
 
-    clustering_results = perform_clustering(simulation_results, distance='pattern', cMethod='maxclust', cValue = 6, plotDendrogram=True)
+    clustering_results = perform_clustering(simulation_results, distance='pattern', cMethod='maxclust', cValue = 6, plotDendrogram=True, transform='normalize')
 
     multiple_tabs_interactive_plot_clusters(clustering_results[1], 'pattern')
 

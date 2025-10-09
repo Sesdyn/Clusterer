@@ -87,7 +87,7 @@
 <p>MDL dosyasının bulunduğu yerde, path’de pycache ve py dosyaları oluşuyor, onları main kodda fonksiyonun altında silmek lazım.</p>
 <p>import sys’den model_path’e olan 4 satır package yayımlanmadan silinerek commented linelar kullanılmalıdır.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">#from simclstr.clusterer import perform_clustering, simulate_from_vensim</span>
@@ -95,7 +95,7 @@
 <span class="c1">#model_path = &#39;path/to/your/model.mdl&#39;</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
-<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;/Users/emirsener/Desktop/ts-clustering&quot;</span><span class="p">)</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;/Users/emirsener/Desktop/Clusterer&quot;</span><span class="p">)</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">simclstr.clusterer</span><span class="w"> </span><span class="kn">import</span> <span class="n">perform_clustering</span><span class="p">,</span> <span class="n">simulate_from_vensim</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">simclstr.plotting</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_clusters</span>
@@ -127,27 +127,27 @@
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 Simulation Run 1:
-&lt;simclstr.clusterer.TimeSeries object at 0x12faef9d0&gt;
+&lt;simclstr.clusterer.TimeSeries object at 0x11b930830&gt;
 ----------------------------------------
 Simulation Run 2:
-&lt;simclstr.clusterer.TimeSeries object at 0x12faeea50&gt;
+&lt;simclstr.clusterer.TimeSeries object at 0x11aed5090&gt;
 ----------------------------------------
 Simulation Run 3:
-&lt;simclstr.clusterer.TimeSeries object at 0x12faeebd0&gt;
+&lt;simclstr.clusterer.TimeSeries object at 0x10fb52350&gt;
 ----------------------------------------
 Simulation Run 4:
-&lt;simclstr.clusterer.TimeSeries object at 0x12faeead0&gt;
+&lt;simclstr.clusterer.TimeSeries object at 0x11b9f48a0&gt;
 ----------------------------------------
 Simulation Run 5:
-&lt;simclstr.clusterer.TimeSeries object at 0x12faedfd0&gt;
+&lt;simclstr.clusterer.TimeSeries object at 0x11ae7fce0&gt;
 ----------------------------------------
 </pre></div></div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">clustering_results</span> <span class="o">=</span> <span class="n">perform_clustering</span><span class="p">(</span><span class="n">simulation_results</span><span class="p">,</span> <span class="n">cMethod</span><span class="o">=</span><span class="s1">&#39;maxclust&#39;</span><span class="p">,</span> <span class="n">cValue</span> <span class="o">=</span> <span class="mi">6</span><span class="p">,</span> <span class="n">plotDendrogram</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">clustering_results</span> <span class="o">=</span> <span class="n">perform_clustering</span><span class="p">(</span><span class="n">simulation_results</span><span class="p">,</span> <span class="n">cMethod</span><span class="o">=</span><span class="s1">&#39;maxclust&#39;</span><span class="p">,</span> <span class="n">cValue</span> <span class="o">=</span> <span class="mi">6</span><span class="p">,</span> <span class="n">plotDendrogram</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="s1">&#39;normalize&#39;</span><span class="p">)</span>
 
 <span class="n">plot_clusters</span><span class="p">(</span><span class="n">clustering_results</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;pattern_dtw&#39;</span><span class="p">)</span>
 </pre></div>
@@ -168,10 +168,10 @@ Simulation Run 5:
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">clustering_results</span> <span class="o">=</span> <span class="n">perform_clustering</span><span class="p">(</span><span class="n">simulation_results</span><span class="p">,</span> <span class="n">distance</span><span class="o">=</span><span class="s1">&#39;euclidean&#39;</span><span class="p">,</span> <span class="n">cMethod</span><span class="o">=</span><span class="s1">&#39;maxclust&#39;</span><span class="p">,</span> <span class="n">cValue</span> <span class="o">=</span> <span class="mi">6</span><span class="p">,</span> <span class="n">plotDendrogram</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">clustering_results</span> <span class="o">=</span> <span class="n">perform_clustering</span><span class="p">(</span><span class="n">simulation_results</span><span class="p">,</span> <span class="n">distance</span><span class="o">=</span><span class="s1">&#39;euclidean&#39;</span><span class="p">,</span> <span class="n">cMethod</span><span class="o">=</span><span class="s1">&#39;maxclust&#39;</span><span class="p">,</span> <span class="n">cValue</span> <span class="o">=</span> <span class="mi">6</span><span class="p">,</span> <span class="n">plotDendrogram</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="s1">&#39;normalize&#39;</span><span class="p">)</span>
 
 <span class="n">plot_clusters</span><span class="p">(</span><span class="n">clustering_results</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;euclidean&#39;</span><span class="p">)</span>
 </pre></div>

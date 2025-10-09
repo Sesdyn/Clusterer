@@ -257,10 +257,55 @@
 
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_normalize_data</span><span class="p">(</span><span class="n">list_of_ts_objects</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="s1">&#39;TimeSeries&#39;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="s1">&#39;TimeSeries&#39;</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute the normalized version of the time-series data such that</span>
+<span class="sd">    y_i = (x_i - min(x)) / (max(x) - min(x))</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    list_of_ts_objects : List[&#39;TimeSeries&#39;]</span>
+<span class="sd">        List of TimeSeries objects</span>
+<span class="sd">        </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    List[&#39;TimeSeries&#39;]</span>
+<span class="sd">        List of TimeSeries objects</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">each_ts</span> <span class="ow">in</span> <span class="n">list_of_ts_objects</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">each_ts</span><span class="o">.</span><span class="n">data</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">each_ts</span><span class="o">.</span><span class="n">data</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">each_ts</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">each_ts</span><span class="o">.</span><span class="n">data</span> <span class="o">/</span> <span class="n">each_ts</span><span class="o">.</span><span class="n">data</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">each_ts</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="p">(</span><span class="n">each_ts</span><span class="o">.</span><span class="n">data</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">each_ts</span><span class="o">.</span><span class="n">data</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">each_ts</span><span class="o">.</span><span class="n">data</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">each_ts</span><span class="o">.</span><span class="n">data</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">list_of_ts_objects</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_standardize_data</span><span class="p">(</span><span class="n">list_of_ts_objects</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="s1">&#39;TimeSeries&#39;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="s1">&#39;TimeSeries&#39;</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute the standardized version of the time-series data such that</span>
+<span class="sd">    y_i = (x_i - mean(x)) / std(x)</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    list_of_ts_objects : List[&#39;TimeSeries&#39;]</span>
+<span class="sd">        List of TimeSeries objects</span>
+<span class="sd">        </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    List[&#39;TimeSeries&#39;]</span>
+<span class="sd">        List of TimeSeries objects</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">each_ts</span> <span class="ow">in</span> <span class="n">list_of_ts_objects</span><span class="p">:</span>
+        <span class="n">each_ts</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="p">(</span><span class="n">each_ts</span><span class="o">.</span><span class="n">data</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">each_ts</span><span class="o">.</span><span class="n">data</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">each_ts</span><span class="o">.</span><span class="n">data</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">each_ts</span><span class="o">.</span><span class="n">data</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">list_of_ts_objects</span>
+
+
 <div class="viewcode-block" id="perform_clustering">
 <a class="viewcode-back" href="../../api/clusterer.html#simclstr.clusterer.perform_clustering">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">perform_clustering</span><span class="p">(</span><span class="n">list_of_ts_objects</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="s1">&#39;TimeSeries&#39;</span><span class="p">],</span> <span class="n">distance</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;pattern_dtw&#39;</span><span class="p">,</span> <span class="n">interClusterDistance</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;complete&#39;</span><span class="p">,</span> 
-            <span class="n">cMethod</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;inconsistent&#39;</span><span class="p">,</span> <span class="n">cValue</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.5</span><span class="p">,</span> <span class="n">plotDendrogram</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">distance_kwargs</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="p">{})</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="s1">&#39;Cluster&#39;</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+            <span class="n">cMethod</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;inconsistent&#39;</span><span class="p">,</span> <span class="n">cValue</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.5</span><span class="p">,</span> <span class="n">plotDendrogram</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">transform</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;original&#39;</span><span class="p">,</span> <span class="n">distance_kwargs</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="p">{})</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="s1">&#39;Cluster&#39;</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Cluster time series data using hierarchical clustering.</span>
 
@@ -327,6 +372,15 @@
 <span class="sd">    plotDendrogram : bool, default=False</span>
 <span class="sd">        If True, displays dendrogram.</span>
 
+<span class="sd">    transform : str, default=&#39;original&#39;</span>
+<span class="sd">        Data transformation method applied before clustering:</span>
+<span class="sd">        </span>
+<span class="sd">        ``original``: No transformation applied</span>
+
+<span class="sd">        ``normalize``: Min-max normalization to [0,1] range</span>
+
+<span class="sd">        ``standardize``: Z-score standardization (mean=0, std=1)</span>
+
 <span class="sd">    distance_kwargs : dict, default={}</span>
 <span class="sd">        Additional distance function parameters. Should be a key parameter (key) and value (value) pair.</span>
 
@@ -335,14 +389,19 @@
 <span class="sd">    Tuple[np.ndarray, List[Cluster], np.ndarray]</span>
 <span class="sd">        Tuple of (distances, cluster_list, cluster_assignments).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">transform</span> <span class="o">==</span> <span class="s1">&#39;normalize&#39;</span><span class="p">:</span>
+        <span class="n">list_of_ts_objects</span> <span class="o">=</span> <span class="n">_normalize_data</span><span class="p">(</span><span class="n">list_of_ts_objects</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">transform</span> <span class="o">==</span> <span class="s1">&#39;standardize&#39;</span><span class="p">:</span>
+        <span class="n">list_of_ts_objects</span> <span class="o">=</span> <span class="n">_standardize_data</span><span class="p">(</span><span class="n">list_of_ts_objects</span><span class="p">)</span>
+
     <span class="c1"># Default to scipy distances for any metric other than the custom ones above</span>
     <span class="n">distance_function</span> <span class="o">=</span> <span class="n">_distance_functions</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">distance</span><span class="p">,</span> <span class="n">_distance_scipy</span><span class="p">)</span>
     <span class="n">dRow</span><span class="p">,</span> <span class="n">list_of_ts_objects_with_fv</span> <span class="o">=</span> <span class="n">distance_function</span><span class="p">(</span><span class="n">list_of_ts_objects</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="n">distance</span><span class="p">,</span> <span class="n">distance_kwargs</span><span class="o">=</span><span class="n">distance_kwargs</span><span class="p">)</span>
 
-    <span class="c1"># Allocate individual runs into clusters using hierarchical agglomerative </span>
-    <span class="c1"># clustering. clusterSetup is a dictionary that customizes the clustering </span>
-    <span class="c1"># algorithm to be used.</span>
-    
+    <span class="c1"># Allocate individual runs into clusters using hierarchical clustering. </span>
+    <span class="c1"># clusterSetup is a dictionary that customizes the clustering algorithm to be used.</span>
+
     <span class="n">clusters</span><span class="p">,</span> <span class="n">list_of_ts_objects_with_fv_and_cluster_id</span> <span class="o">=</span> <span class="n">_flatcluster</span><span class="p">(</span><span class="n">dRow</span><span class="p">,</span> <span class="n">list_of_ts_objects_with_fv</span><span class="p">,</span> <span class="n">plotDendrogram</span><span class="o">=</span><span class="n">plotDendrogram</span><span class="p">,</span> <span class="n">interClusterDistance</span><span class="o">=</span><span class="n">interClusterDistance</span><span class="p">,</span> <span class="n">cMethod</span><span class="o">=</span><span class="n">cMethod</span><span class="p">,</span> <span class="n">cValue</span><span class="o">=</span><span class="n">cValue</span><span class="p">)</span>
 
     <span class="n">clusterList</span> <span class="o">=</span> <span class="n">_create_cluster_list</span><span class="p">(</span><span class="n">clusters</span><span class="p">,</span> <span class="n">dRow</span><span class="p">,</span> <span class="n">list_of_ts_objects_with_fv_and_cluster_id</span><span class="p">)</span>

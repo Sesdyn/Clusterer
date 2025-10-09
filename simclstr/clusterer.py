@@ -171,8 +171,53 @@ def simulate_from_vensim(model_path: str, parameter_set: Dict[str, Union[float, 
     return list_of_ts_objects
 
 
+def _normalize_data(list_of_ts_objects: List['TimeSeries']) -> List['TimeSeries']:
+    """
+    Compute the normalized version of the time-series data such that
+    y_i = (x_i - min(x)) / (max(x) - min(x))
+    
+    Parameters
+    ----------
+    list_of_ts_objects : List['TimeSeries']
+        List of TimeSeries objects
+        
+    Returns
+    -------
+    List['TimeSeries']
+        List of TimeSeries objects
+    """
+    for each_ts in list_of_ts_objects:
+        if np.max(each_ts.data) - np.min(each_ts.data) == 0:
+            each_ts.data = 0.5 * each_ts.data / each_ts.data
+        else:
+            each_ts.data = (each_ts.data - np.min(each_ts.data)) / (np.max(each_ts.data) - np.min(each_ts.data))
+
+    return list_of_ts_objects
+
+
+def _standardize_data(list_of_ts_objects: List['TimeSeries']) -> List['TimeSeries']:
+    """
+    Compute the standardized version of the time-series data such that
+    y_i = (x_i - mean(x)) / std(x)
+    
+    Parameters
+    ----------
+    list_of_ts_objects : List['TimeSeries']
+        List of TimeSeries objects
+        
+    Returns
+    -------
+    List['TimeSeries']
+        List of TimeSeries objects
+    """
+    for each_ts in list_of_ts_objects:
+        each_ts.data = (each_ts.data - np.mean(each_ts.data)) / (1 if np.std(each_ts.data) == 0 else np.std(each_ts.data))
+
+    return list_of_ts_objects
+
+
 def perform_clustering(list_of_ts_objects: List['TimeSeries'], distance: str = 'pattern_dtw', interClusterDistance: str = 'complete', 
-            cMethod: str = 'inconsistent', cValue: float = 1.5, plotDendrogram: bool = False, distance_kwargs: dict = {}) -> Tuple[np.ndarray, List['Cluster'], np.ndarray]:
+            cMethod: str = 'inconsistent', cValue: float = 1.5, plotDendrogram: bool = False, transform: str = 'original', distance_kwargs: dict = {}) -> Tuple[np.ndarray, List['Cluster'], np.ndarray]:
     """
     Cluster time series data using hierarchical clustering.
 
@@ -239,6 +284,15 @@ def perform_clustering(list_of_ts_objects: List['TimeSeries'], distance: str = '
     plotDendrogram : bool, default=False
         If True, displays dendrogram.
 
+    transform : str, default='original'
+        Data transformation method applied before clustering:
+        
+        ``original``: No transformation applied
+
+        ``normalize``: Min-max normalization to [0,1] range
+
+        ``standardize``: Z-score standardization (mean=0, std=1)
+
     distance_kwargs : dict, default={}
         Additional distance function parameters. Should be a key parameter (key) and value (value) pair.
 
@@ -247,14 +301,19 @@ def perform_clustering(list_of_ts_objects: List['TimeSeries'], distance: str = '
     Tuple[np.ndarray, List[Cluster], np.ndarray]
         Tuple of (distances, cluster_list, cluster_assignments).
     """
+
+    if transform == 'normalize':
+        list_of_ts_objects = _normalize_data(list_of_ts_objects)
+    if transform == 'standardize':
+        list_of_ts_objects = _standardize_data(list_of_ts_objects)
+
     # Default to scipy distances for any metric other than the custom ones above
     distance_function = _distance_functions.get(distance, _distance_scipy)
     dRow, list_of_ts_objects_with_fv = distance_function(list_of_ts_objects, metric=distance, distance_kwargs=distance_kwargs)
 
-    # Allocate individual runs into clusters using hierarchical agglomerative 
-    # clustering. clusterSetup is a dictionary that customizes the clustering 
-    # algorithm to be used.
-    
+    # Allocate individual runs into clusters using hierarchical clustering. 
+    # clusterSetup is a dictionary that customizes the clustering algorithm to be used.
+
     clusters, list_of_ts_objects_with_fv_and_cluster_id = _flatcluster(dRow, list_of_ts_objects_with_fv, plotDendrogram=plotDendrogram, interClusterDistance=interClusterDistance, cMethod=cMethod, cValue=cValue)
 
     clusterList = _create_cluster_list(clusters, dRow, list_of_ts_objects_with_fv_and_cluster_id)

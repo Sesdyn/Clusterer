@@ -8,7 +8,7 @@ def main():
 
     read_data = read_time_series(model_path_vensim)
 
-    clustering_results = perform_clustering(read_data, distance='pattern_dtw', cMethod='maxclust', cValue = 6, plotDendrogram=True)
+    clustering_results = perform_clustering(read_data, distance='pattern_dtw', cMethod='maxclust', cValue = 6, plotDendrogram=True, transform='normalize')
 
     multiple_tabs_interactive_plot_clusters(clustering_results[1], 'pattern_dtw')
 

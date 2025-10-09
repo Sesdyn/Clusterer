@@ -12,52 +12,10 @@ from typing import List, Tuple, Optional, Dict, Any, TYPE_CHECKING
 import warnings
 import xlsxwriter
 from .plotting import plot_clusters
-from .clusterer import read_time_series, perform_clustering
+from .clusterer import read_time_series, perform_clustering, _normalize_data, _standardize_data
 
 if TYPE_CHECKING:
     from .clusterer import TimeSeries
-
-
-def _normalize_data(list_of_ts_objects: List['TimeSeries']) -> List['TimeSeries']:
-    """
-    Compute the normalized version of the time-series data such that
-    y_i = (x_i - min(x)) / (max(x) - min(x))
-    
-    Parameters
-    ----------
-    list_of_ts_objects : List['TimeSeries']
-        List of TimeSeries objects
-        
-    Returns
-    -------
-    List['TimeSeries']
-        List of TimeSeries objects
-    """
-    for each_ts in list_of_ts_objects:
-        each_ts.data = (each_ts.data - np.min(each_ts.data)) / (np.max(each_ts.data) - np.min(each_ts.data))
-
-    return list_of_ts_objects
-
-
-def _standardize_data(list_of_ts_objects: List['TimeSeries']) -> List['TimeSeries']:
-    """
-    Compute the standardized version of the time-series data such that
-    y_i = (x_i - mean(x)) / std(x)
-    
-    Parameters
-    ----------
-    list_of_ts_objects : List['TimeSeries']
-        List of TimeSeries objects
-        
-    Returns
-    -------
-    List['TimeSeries']
-        List of TimeSeries objects
-    """
-    for each_ts in list_of_ts_objects:
-        each_ts.data = (each_ts.data - np.mean(each_ts.data)) / (1 if np.std(each_ts.data) == 0 else np.std(each_ts.data))
-
-    return list_of_ts_objects
 
 
 def _compare_clusterings(list_of_ts_objects: List['TimeSeries']) -> Tuple[float, float]:
