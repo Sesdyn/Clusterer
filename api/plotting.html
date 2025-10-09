@@ -1,0 +1,209 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Plotting Functions &mdash; Simclstr 0.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=01f34227"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="API Reference" href="experiment_controller.html" />
+    <link rel="prev" title="API Reference" href="clusterer.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Simclstr
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Library Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="clusterer.html">Main Clustering Functions</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Plotting Functions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#simclstr-plotting">simclstr.plotting</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#plot-clusters">plot_clusters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#interactive-plot-clusters">interactive_plot_clusters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multiple-tabs-interactive-plot-clusters">multiple_tabs_interactive_plot_clusters</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="experiment_controller.html">Experiment Controller</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Examples and Tutorials:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../pysd/pysd_notebook.html">PySD Integration Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../basicA/basicA_notebook.html">BasicA Instance Example</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Simclstr</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Plotting Functions</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/plotting.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="plotting-functions">
+<h1>Plotting Functions<a class="headerlink" href="#plotting-functions" title="Link to this heading"></a></h1>
+<section id="simclstr-plotting">
+<h2>simclstr.plotting<a class="headerlink" href="#simclstr-plotting" title="Link to this heading"></a></h2>
+<section id="plot-clusters">
+<span id="id1"></span><h3>plot_clusters<a class="headerlink" href="#plot-clusters" title="Link to this heading"></a></h3>
+<dl class="py function">
+<dt class="sig sig-object py" id="simclstr.plotting.plot_clusters">
+<span class="sig-prename descclassname"><span class="pre">simclstr.plotting.</span></span><span class="sig-name descname"><span class="pre">plot_clusters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cluster_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dist</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'show'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'results'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/simclstr/plotting.html#plot_clusters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#simclstr.plotting.plot_clusters" title="Link to this definition"></a></dt>
+<dd><p>Plot cluster members on separate subplots using matplotlib.</p>
+<p>This function creates a grid of subplots where each subplot shows all time series
+belonging to a specific cluster. Each cluster is displayed in its own subplot
+with all member time series overlaid.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cluster_list</strong> (<em>List</em><em>[</em><a class="reference internal" href="clusterer.html#simclstr.clusterer.Cluster" title="simclstr.clusterer.Cluster"><em>Cluster</em></a><em>]</em>) – List of Cluster objects containing clustered time series data.</p></li>
+<li><p><strong>dist</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Distance metric name used for clustering. This will be displayed in the
+window title and can help identify which distance method was used.</p></li>
+<li><p><strong>mode</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>default='show'</em>) – <p>Display mode for the plot:</p>
+<ul>
+<li><p>’show’: Display the plot interactively using matplotlib.pyplot.show()</p></li>
+<li><p>’save’: Save the plot to a PNG file without displaying it</p></li>
+</ul>
+</p></li>
+<li><p><strong>fname</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>default='results'</em>) – Base filename for saving the plot (without extension). Only used when
+mode=’save’. The file will be saved as ‘{fname}.png’.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="interactive-plot-clusters">
+<span id="id2"></span><h3>interactive_plot_clusters<a class="headerlink" href="#interactive-plot-clusters" title="Link to this heading"></a></h3>
+<dl class="py function">
+<dt class="sig sig-object py" id="simclstr.plotting.interactive_plot_clusters">
+<span class="sig-prename descclassname"><span class="pre">simclstr.plotting.</span></span><span class="sig-name descname"><span class="pre">interactive_plot_clusters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cluster_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dist</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">no_cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">port</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8050</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/simclstr/plotting.html#interactive_plot_clusters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#simclstr.plotting.interactive_plot_clusters" title="Link to this definition"></a></dt>
+<dd><p>Create an interactive plot of cluster members.</p>
+<p>When you click on a time series, information about that time series and its cluster will appear in the information panel.</p>
+<p>Press Ctrl+C to stop the server.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cluster_list</strong> (<em>List</em><em>[</em><a class="reference internal" href="clusterer.html#simclstr.clusterer.Cluster" title="simclstr.clusterer.Cluster"><em>Cluster</em></a><em>]</em>) – List of Cluster objects containing clustered time series data.</p></li>
+<li><p><strong>dist</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Distance metric name used for clustering.</p></li>
+<li><p><strong>no_cols</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><em>default=3</em>) – Number of columns in the plot.</p></li>
+<li><p><strong>port</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><em>default=8050</em>) – Port number for the Dash server.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="multiple-tabs-interactive-plot-clusters">
+<span id="id3"></span><h3>multiple_tabs_interactive_plot_clusters<a class="headerlink" href="#multiple-tabs-interactive-plot-clusters" title="Link to this heading"></a></h3>
+<dl class="py function">
+<dt class="sig sig-object py" id="simclstr.plotting.multiple_tabs_interactive_plot_clusters">
+<span class="sig-prename descclassname"><span class="pre">simclstr.plotting.</span></span><span class="sig-name descname"><span class="pre">multiple_tabs_interactive_plot_clusters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cluster_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dist</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">port</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8051</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/simclstr/plotting.html#multiple_tabs_interactive_plot_clusters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#simclstr.plotting.multiple_tabs_interactive_plot_clusters" title="Link to this definition"></a></dt>
+<dd><p>Create an interactive plot of cluster members, each cluster is displayed in its own tab.</p>
+<p>When you click on a time series, information about that time series and its cluster will appear in the information panel.</p>
+<p>Additionally includes a “Representatives” tab showing all cluster representatives in one plot.</p>
+<p>Press Ctrl+C to stop the server.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cluster_list</strong> (<em>List</em><em>[</em><a class="reference internal" href="clusterer.html#simclstr.clusterer.Cluster" title="simclstr.clusterer.Cluster"><em>Cluster</em></a><em>]</em>) – List of Cluster objects containing clustered time series data.</p></li>
+<li><p><strong>dist</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Distance metric name used for clustering.</p></li>
+<li><p><strong>port</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><em>default=8051</em>) – Port number for the Dash server.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="clusterer.html" class="btn btn-neutral float-left" title="API Reference" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="experiment_controller.html" class="btn btn-neutral float-right" title="API Reference" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Sesdyn Geeks.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

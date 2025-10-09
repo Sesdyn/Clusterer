@@ -1,0 +1,215 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>API Reference &mdash; Simclstr 0.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=01f34227"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="PySD usage" href="../pysd/pysd_notebook.html" />
+    <link rel="prev" title="Plotting Functions" href="plotting.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Simclstr
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Library Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="clusterer.html">Main Clustering Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plotting.html">Plotting Functions</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Experiment Controller</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#simclstr-experiment-controller">simclstr.experiment_controller</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#experiment-controller">experiment_controller</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Examples and Tutorials:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../pysd/pysd_notebook.html">PySD Integration Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../basicA/basicA_notebook.html">BasicA Instance Example</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Simclstr</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">API Reference</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/experiment_controller.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="api-reference">
+<h1>API Reference<a class="headerlink" href="#api-reference" title="Link to this heading"></a></h1>
+<section id="simclstr-experiment-controller">
+<h2>simclstr.experiment_controller<a class="headerlink" href="#simclstr-experiment-controller" title="Link to this heading"></a></h2>
+<section id="experiment-controller">
+<span id="id1"></span><h3>experiment_controller<a class="headerlink" href="#experiment-controller" title="Link to this heading"></a></h3>
+<dl class="py function">
+<dt class="sig sig-object py" id="simclstr.experiment_controller.experiment_controller">
+<span class="sig-prename descclassname"><span class="pre">simclstr.experiment_controller.</span></span><span class="sig-name descname"><span class="pre">experiment_controller</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pattern_dtw'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interClusterDistance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'complete'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transform</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'original'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cMethod</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'inconsistent'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cValue</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">replicate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">note</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_plots</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/simclstr/experiment_controller.html#experiment_controller"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#simclstr.experiment_controller.experiment_controller" title="Link to this definition"></a></dt>
+<dd><p>Run a controlled clustering experiment with comprehensive reporting.</p>
+<p>This function performs clustering experiments with different parameters and generates
+detailed reports including performance metrics, visualizations, and Excel summaries.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filePath</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Path to the input file containing time series data. Supports .xlsx and .csv formats.
+For .xlsx files, expects ‘data’ sheet with time series and optional ‘clusters’ sheet
+with cluster assignments.</p></li>
+<li><p><strong>distance</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>default='pattern_dtw'</em>) – <p>Distance metric to use for clustering. Available options:</p>
+<p><strong>Pattern-based distances:</strong></p>
+<p><code class="docutils literal notranslate"><span class="pre">pattern</span></code>: Pattern distance using behavioral features</p>
+<p><code class="docutils literal notranslate"><span class="pre">pattern_dtw</span></code>: Pattern distance with Dynamic Time Warping</p>
+<p><code class="docutils literal notranslate"><span class="pre">dtw</span></code>: Dynamic Time Warping distance</p>
+<p><a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.distance.pdist.html">Scipy distance metrics</a>:</p>
+<p><code class="docutils literal notranslate"><span class="pre">euclidean</span></code>, <code class="docutils literal notranslate"><span class="pre">minkowski</span></code>, <code class="docutils literal notranslate"><span class="pre">cityblock</span></code>, <code class="docutils literal notranslate"><span class="pre">seuclidean</span></code>, <code class="docutils literal notranslate"><span class="pre">sqeuclidean</span></code>,
+<code class="docutils literal notranslate"><span class="pre">cosine</span></code>, <code class="docutils literal notranslate"><span class="pre">correlation</span></code>, <code class="docutils literal notranslate"><span class="pre">hamming</span></code>, <code class="docutils literal notranslate"><span class="pre">jaccard</span></code>, <code class="docutils literal notranslate"><span class="pre">jensenshannon</span></code>,
+<code class="docutils literal notranslate"><span class="pre">chebyshev</span></code>, <code class="docutils literal notranslate"><span class="pre">canberra</span></code>, <code class="docutils literal notranslate"><span class="pre">braycurtis</span></code>, <code class="docutils literal notranslate"><span class="pre">mahalanobis</span></code>,
+<code class="docutils literal notranslate"><span class="pre">yule</span></code>, <code class="docutils literal notranslate"><span class="pre">matching</span></code>, <code class="docutils literal notranslate"><span class="pre">dice</span></code>, <code class="docutils literal notranslate"><span class="pre">rogerstanimoto</span></code>, <code class="docutils literal notranslate"><span class="pre">russellrao</span></code>,
+<code class="docutils literal notranslate"><span class="pre">sokalsneath</span></code>, <code class="docutils literal notranslate"><span class="pre">kulczynski1</span></code></p>
+</p></li>
+<li><p><strong>interClusterDistance</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>default='complete'</em>) – <p><a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html#scipy.cluster.hierarchy.linkage">Hierarchical clustering linkage method</a>:</p>
+<p><code class="docutils literal notranslate"><span class="pre">single</span></code>: Minimum distances between all observations of two sets</p>
+<p><code class="docutils literal notranslate"><span class="pre">complete</span></code>: Maximum distances between all observations of two sets</p>
+<p><code class="docutils literal notranslate"><span class="pre">average</span></code>: Average distances between all observations of two sets</p>
+<p><code class="docutils literal notranslate"><span class="pre">weighted</span></code>: Weighted average distances</p>
+<p><code class="docutils literal notranslate"><span class="pre">centroid</span></code>: Distance between centroids of clusters</p>
+<p><code class="docutils literal notranslate"><span class="pre">median</span></code>: Distance between medians of clusters</p>
+<p><code class="docutils literal notranslate"><span class="pre">ward</span></code>: Minimizes within-cluster sum of squared differences</p>
+</p></li>
+<li><p><strong>transform</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>default='original'</em>) – <p>Data transformation method applied before clustering:</p>
+<p><code class="docutils literal notranslate"><span class="pre">original</span></code>: No transformation applied</p>
+<p><code class="docutils literal notranslate"><span class="pre">normalize</span></code>: Min-max normalization to [0,1] range</p>
+<p><code class="docutils literal notranslate"><span class="pre">standardize</span></code>: Z-score standardization (mean=0, std=1)</p>
+</p></li>
+<li><p><strong>cMethod</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>default='maxclust'</em>) – <p><a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.fcluster.html#scipy.cluster.hierarchy.fcluster">Clustering criterion for forming flat clusters from hierarchy</a>:</p>
+<p><code class="docutils literal notranslate"><span class="pre">maxclust</span></code>: Maximum number of clusters (requires cValue = number of clusters)</p>
+<p><code class="docutils literal notranslate"><span class="pre">distance</span></code>: Distance threshold (requires cValue = distance threshold)</p>
+<p><code class="docutils literal notranslate"><span class="pre">inconsistent</span></code>: Inconsistency criterion (requires cValue = inconsistency threshold)</p>
+<p><code class="docutils literal notranslate"><span class="pre">monocrit</span></code>: Monotonic criterion (requires cValue = threshold)</p>
+</p></li>
+<li><p><strong>cValue</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>default=1.5</em>) – <p>Threshold value for clustering criterion. Interpretation depends on cMethod:</p>
+<ul>
+<li><p>For <code class="docutils literal notranslate"><span class="pre">maxclust</span></code>: Number of desired clusters</p></li>
+<li><p>For <code class="docutils literal notranslate"><span class="pre">distance</span></code>: Distance threshold for cluster formation</p></li>
+<li><p>For <code class="docutils literal notranslate"><span class="pre">inconsistent</span></code>: Inconsistency coefficient threshold</p></li>
+<li><p>For <code class="docutils literal notranslate"><span class="pre">monocrit</span></code>: Threshold for monotonic criterion</p></li>
+</ul>
+</p></li>
+<li><p><strong>replicate</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><em>default=1</em>) – Number of replications for pattern distance method. Only applicable when
+distance=’pattern’. Higher values provide more robust results for
+stochastic pattern distance but increase computation time.</p></li>
+<li><p><strong>note</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>default=''</em>) – Additional note to append to output filename for identification purposes.
+Useful for experiment tracking and organization.</p></li>
+<li><p><strong>save_plots</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>default=False</em>) – Whether to generate and save cluster visualization plots as PNG files.
+Plots show all time series grouped by their assigned clusters.</p></li>
+<li><p><strong>output_dir</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>, </em><em>default=None</em>) – Directory path to save output files. If None, creates ‘output’ directory
+in the package root. Directory will be created if it doesn’t exist.</p></li>
+<li><p><strong>file_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">clusters</span></code>: Final cluster assignments as numpy array</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">cluster_list</span></code>: List of Cluster objects with detailed information</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">distance_matrix</span></code>: Computed condensed distance matrix</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">rand_index</span></code>: Rand index comparing with original clusters (if available)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">jaccard_index</span></code>: Jaccard index comparing with original clusters (if available)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">run_time</span></code>: Clustering execution time in seconds</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">total_time</span></code>: Total experiment time including I/O in seconds</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">num_clusters</span></code>: Number of clusters formed</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">output_file</span></code>: Path to generated Excel report file</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">plot_file</span></code>: Path to generated plot file (if save_plots=True)</p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dict[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a>, Any]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="plotting.html" class="btn btn-neutral float-left" title="Plotting Functions" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../pysd/pysd_notebook.html" class="btn btn-neutral float-right" title="PySD usage" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Sesdyn Geeks.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
