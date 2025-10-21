@@ -135,6 +135,7 @@ def interactive_plot_clusters(cluster_list: List["Cluster"], dist: str, no_cols:
             'number_of_members': clust.number_of_members,
             'indices_of_members': clust.indices_of_members.tolist(),
             'best_representative_member': clust.best_representative_member.label,
+            'best_representative_member_index': clust.best_representative_member.index,
             'labels_of_members': [member.label for member in clust.list_of_members]
         }
         
@@ -147,6 +148,7 @@ def interactive_plot_clusters(cluster_list: List["Cluster"], dist: str, no_cols:
 
             time_series_data[ts_id] = {
                 'name': each_ts.label,
+                'index_of_ts': each_ts.index,
                 'cluster_id': clust.cluster_id,
                 'length': len(each_ts.data),
                 'mean': float(np.mean(each_ts.data)),
@@ -170,7 +172,7 @@ def interactive_plot_clusters(cluster_list: List["Cluster"], dist: str, no_cols:
                     line=dict(width=line_width, color=line_color),
                     opacity=opacity,
                     customdata=[ts_id] * len(t),
-                    hovertemplate=f"<b>{each_ts.label}</b><br>" +
+                    hovertemplate=f"<b>{each_ts.index}: {each_ts.label}</b><br>" +
                                 "Time: %{x}<br>" +
                                 "Value: %{y:.3f}<br>" +
                                 f"Cluster: {clust.cluster_id}<br>" +
@@ -285,38 +287,38 @@ def interactive_plot_clusters(cluster_list: List["Cluster"], dist: str, no_cols:
                             ], style={'marginBottom': '15px', 'overflow': 'hidden'}),
                             html.Div([
                                 html.Span("Label:", style={'fontWeight': 'bold', 'color': '#34495e', 'minWidth': '60px', 'display': 'inline-block'}),
-                                html.Span(f" {ts_info['name']}", style={'marginLeft': '10px', 'overflow': 'hidden', 'textOverflow': 'ellipsis', 'whiteSpace': 'nowrap'})
+                                html.Span(f"{ts_info['index_of_ts']}: {ts_info['name']}", style={'marginLeft': '4px', 'overflow': 'hidden', 'textOverflow': 'ellipsis', 'whiteSpace': 'nowrap'})
                             ], style={'marginBottom': '10px', 'overflow': 'hidden'}),
                             html.Div([
                                 html.Span("Length:", style={'fontWeight': 'bold', 'color': '#34495e', 'minWidth': '60px', 'display': 'inline-block'}),
-                                html.Span(f" {ts_info['length']}", style={'marginLeft': '10px', 'overflow': 'hidden', 'textOverflow': 'ellipsis', 'whiteSpace': 'nowrap'})
+                                html.Span(f" {ts_info['length']}", style={'marginLeft': '4px', 'overflow': 'hidden', 'textOverflow': 'ellipsis', 'whiteSpace': 'nowrap'})
                             ], style={'marginBottom': '10px', 'overflow': 'hidden'}),
                             html.Div([
                                 html.Span("Mean:", style={'fontWeight': 'bold', 'color': '#34495e', 'minWidth': '60px', 'display': 'inline-block'}),
-                                html.Span(f" {ts_info['mean']:.4f}", style={'marginLeft': '10px', 'overflow': 'hidden', 'textOverflow': 'ellipsis', 'whiteSpace': 'nowrap'})
+                                html.Span(f" {ts_info['mean']:.4f}", style={'marginLeft': '4px', 'overflow': 'hidden', 'textOverflow': 'ellipsis', 'whiteSpace': 'nowrap'})
                             ], style={'marginBottom': '10px', 'overflow': 'hidden'})
-                        ], style={'width': '30%', 'display': 'inline-block', 'verticalAlign': 'top', 'overflow': 'hidden'}),
+                        ], style={'width': '40%', 'display': 'inline-block', 'verticalAlign': 'top', 'overflow': 'hidden'}),
                         
                         # Middle column
                         html.Div([
                             html.Div([
                                 html.Span("Std Dev:", style={'fontWeight': 'bold', 'color': '#34495e', 'minWidth': '80px', 'display': 'inline-block'}),
-                                html.Span(f" {ts_info['std']:.4f}", style={'marginLeft': '10px', 'overflow': 'hidden', 'textOverflow': 'ellipsis', 'whiteSpace': 'nowrap'})
+                                html.Span(f" {ts_info['std']:.4f}", style={'marginLeft': '4px', 'overflow': 'hidden', 'textOverflow': 'ellipsis', 'whiteSpace': 'nowrap'})
                             ], style={'marginBottom': '10px', 'overflow': 'hidden'}),
                             html.Div([
                                 html.Span("Max Value:", style={'fontWeight': 'bold', 'color': '#34495e', 'minWidth': '80px', 'display': 'inline-block'}),
-                                html.Span(f" {ts_info['max']:.4f}", style={'marginLeft': '10px', 'overflow': 'hidden', 'textOverflow': 'ellipsis', 'whiteSpace': 'nowrap'})
+                                html.Span(f" {ts_info['max']:.4f}", style={'marginLeft': '4px', 'overflow': 'hidden', 'textOverflow': 'ellipsis', 'whiteSpace': 'nowrap'})
                             ], style={'marginBottom': '10px', 'overflow': 'hidden'}),
                             html.Div([
                                 html.Span("Min Value:", style={'fontWeight': 'bold', 'color': '#34495e', 'minWidth': '80px', 'display': 'inline-block'}),
-                                html.Span(f" {ts_info['min']:.4f}", style={'marginLeft': '10px', 'overflow': 'hidden', 'textOverflow': 'ellipsis', 'whiteSpace': 'nowrap'})
+                                html.Span(f" {ts_info['min']:.4f}", style={'marginLeft': '4px', 'overflow': 'hidden', 'textOverflow': 'ellipsis', 'whiteSpace': 'nowrap'})
                             ], style={'marginBottom': '10px', 'overflow': 'hidden'}),
                             html.Div([
                                 html.Span("Representative:", style={'fontWeight': 'bold', 'color': '#34495e', 'minWidth': '80px', 'display': 'inline-block'}),
                                 html.Span(" Yes" if ts_info["is_representative"] else " No", 
-                                         style={'marginLeft': '10px', 'color': '#34495e' if ts_info["is_representative"] else '#34495e', 'overflow': 'hidden', 'textOverflow': 'ellipsis', 'whiteSpace': 'nowrap'})
+                                         style={'marginLeft': '4px', 'color': '#34495e' if ts_info["is_representative"] else '#34495e', 'overflow': 'hidden', 'textOverflow': 'ellipsis', 'whiteSpace': 'nowrap'})
                             ], style={'marginBottom': '10px', 'overflow': 'hidden'})
-                        ], style={'width': '30%', 'display': 'inline-block', 'verticalAlign': 'top', 'marginLeft': '4%', 'overflow': 'hidden'}),
+                        ], style={'width': '20%', 'display': 'inline-block', 'verticalAlign': 'top', 'marginLeft': '4%', 'overflow': 'hidden'}),
                         
                         # Gray vertical line
                         html.Div(style={'width': '1px', 'backgroundColor': '#cccccc', 'height': '120px', 'display': 'inline-block', 'marginLeft': '2%', 'marginRight': '2%', 'verticalAlign': 'top'}),
@@ -328,15 +330,15 @@ def interactive_plot_clusters(cluster_list: List["Cluster"], dist: str, no_cols:
                             ], style={'marginBottom': '15px', 'overflow': 'hidden'}),
                             html.Div([
                                 html.Span("Cluster ID:", style={'fontWeight': 'bold', 'color': '#34495e', 'minWidth': '100px', 'display': 'inline-block'}),
-                                html.Span(f" {ts_info['cluster_id']}", style={'marginLeft': '10px', 'overflow': 'hidden', 'textOverflow': 'ellipsis', 'whiteSpace': 'nowrap'})
+                                html.Span(f" {ts_info['cluster_id']}", style={'marginLeft': '4px', 'overflow': 'hidden', 'textOverflow': 'ellipsis', 'whiteSpace': 'nowrap'})
                             ], style={'marginBottom': '10px', 'overflow': 'hidden'}),
                             html.Div([
                                 html.Span("Cluster Size:", style={'fontWeight': 'bold', 'color': '#34495e', 'minWidth': '100px', 'display': 'inline-block'}),
-                                html.Span(f" {cluster_info['number_of_members']}", style={'marginLeft': '10px', 'overflow': 'hidden', 'textOverflow': 'ellipsis', 'whiteSpace': 'nowrap'})
+                                html.Span(f" {cluster_info['number_of_members']}", style={'marginLeft': '4px', 'overflow': 'hidden', 'textOverflow': 'ellipsis', 'whiteSpace': 'nowrap'})
                             ], style={'marginBottom': '10px', 'overflow': 'hidden'}),
                             html.Div([
                                 html.Span("Representative Member:", style={'fontWeight': 'bold', 'color': '#34495e', 'minWidth': '100px', 'display': 'inline-block'}),
-                                html.Span(f" {cluster_info['best_representative_member']}", style={'marginLeft': '10px', 'overflow': 'hidden', 'textOverflow': 'ellipsis', 'whiteSpace': 'nowrap'})
+                                html.Span(f" {cluster_info['best_representative_member_index']}: {cluster_info['best_representative_member']}", style={'marginLeft': '4px', 'overflow': 'hidden', 'textOverflow': 'ellipsis', 'whiteSpace': 'nowrap'})
                             ], style={'marginBottom': '10px', 'overflow': 'hidden'})
                         ], style={'width': '30%', 'display': 'inline-block', 'verticalAlign': 'top', 'overflow': 'hidden'})
                     ], style={'wordWrap': 'break-word'})
@@ -410,6 +412,7 @@ def multiple_tabs_interactive_plot_clusters(cluster_list: List["Cluster"], dist:
         repr_id = f"repr_cluster_{clust.cluster_id}"
         representative_data[repr_id] = {
             'name': representative_ts.label,
+            'index_of_ts': representative_ts.index,
             'cluster_id': clust.cluster_id,
             'data': representative_ts.data,
             'length': len(representative_ts.data),
@@ -424,6 +427,7 @@ def multiple_tabs_interactive_plot_clusters(cluster_list: List["Cluster"], dist:
             ts_id = f"cluster_{clust.cluster_id}_ts_{j_idx}"
             time_series_data[ts_id] = {
                 'name': each_ts.label,
+                'index_of_ts': each_ts.index,
                 'cluster_id': clust.cluster_id,
                 'length': len(each_ts.data),
                 'mean': float(np.mean(each_ts.data)),
@@ -559,6 +563,7 @@ def _create_cluster_tab_content(clust, colors, time_series_data, cluster_data):
     """Create content for individual cluster tab."""
     
     # First row: Cluster info panel (left) and representative plot (right)
+    repr_index = clust.best_representative_member.index
     repr_name = clust.best_representative_member.label
     repr_data = clust.best_representative_member.data
     repr_fig = go.Figure()
@@ -569,7 +574,7 @@ def _create_cluster_tab_content(clust, colors, time_series_data, cluster_data):
         mode='lines',
         name=repr_name,
         line=dict(width=3, color='#e74c3c'),
-        hovertemplate=f"<b>{repr_name}</b><br>Time: %{{x}}<br>Value: %{{y:.3f}}<extra></extra>"
+        hovertemplate=f"<b>{repr_index}: {repr_name}</b><br>Time: %{{x}}<br>Value: %{{y:.3f}}<extra></extra>"
     ))
     
     repr_fig.update_layout(
@@ -600,7 +605,7 @@ def _create_cluster_tab_content(clust, colors, time_series_data, cluster_data):
             line=dict(width=line_width, color=line_color),
             opacity=opacity,
             customdata=[ts_id] * len(t),
-            hovertemplate=f"<b>{each_ts.label}</b><br>Time: %{{x}}<br>Value: %{{y:.3f}}<br>{'Representative' if is_repr else ''}<extra></extra>"
+            hovertemplate=f"<b>{each_ts.index}: {each_ts.label}</b><br>Time: %{{x}}<br>Value: %{{y:.3f}}<br>{'Representative' if is_repr else ''}<extra></extra>"
         ))
     
     all_series_fig.update_layout(
@@ -630,7 +635,7 @@ def _create_cluster_tab_content(clust, colors, time_series_data, cluster_data):
             'fontSize': '14px',
             'lineHeight': '1.5'
         }),
-        html.P([html.Strong("Representative Member: "), str(clust.best_representative_member.label)], style={
+        html.P([html.Strong("Representative Member: "), str(clust.best_representative_member.index) + ': ' + str(clust.best_representative_member.label)], style={
             'marginBottom': '8px',
             'fontSize': '14px',
             'lineHeight': '1.5',
@@ -726,7 +731,6 @@ def _create_representatives_tab_content(cluster_list, colors, representative_dat
     repr_fig = go.Figure()
     
     for idx, clust in enumerate(cluster_list):
-        repr_name = clust.best_representative_member.label
         repr_data = clust.best_representative_member.data
 
         t = np.arange(repr_data.shape[0])
@@ -864,7 +868,7 @@ def _create_cluster_callbacks(app, cluster_id, time_series_data, cluster_data):
                                 'fontSize': '16px',
                                 'fontWeight': 'bold'
                             }),
-                            html.P([html.Strong("Label: "), ts_info['name']], style={
+                            html.P([html.Strong("Label: "), ts_info['index_of_ts'], ': ', ts_info['name']], style={
                                 'marginBottom': '10px',
                                 'fontSize': '14px',
                                 'lineHeight': '1.4'
@@ -962,7 +966,7 @@ def _create_representatives_callback(app, representative_data, cluster_data):
                 
                 # Print information to terminal
                 print(f"\nRepresentative Time Series Clicked:")
-                print(f"Label: {repr_info['name']}")
+                print(f"Label: {repr_info['index_of_ts']}: {repr_info['name']}")
                 print(f"Data: {repr_info['data'].tolist()}")
                 print(f"Feature vector: {repr_info['feature_vector']}")
                 print(f"Cluster id: {repr_info['cluster_id']}")
@@ -989,7 +993,7 @@ def _create_representatives_callback(app, representative_data, cluster_data):
                                     'fontSize': '14px',
                                     'lineHeight': '1.4'
                                 }),
-                                html.P([html.Strong("Representative Label: "), str(cluster_info['best_representative_member'])], style={
+                                html.P([html.Strong("Representative Label: "), str(repr_info['index_of_ts']) + ': ' + str(cluster_info['best_representative_member'])], style={
                                     'marginBottom': '8px',
                                     'fontSize': '14px',
                                     'lineHeight': '1.4',

@@ -25,10 +25,16 @@ def main():
 
     simulation_results = simulate_from_vensim(model_path, parameter_set, output_of_interest)
 
-    clustering_results = perform_clustering(simulation_results, distance='pattern', cMethod='maxclust', cValue = 6, plotDendrogram=True, transform='normalize')
+    clustering_results = perform_clustering(simulation_results, distance='pattern_dtw', cMethod='maxclust', cValue = 6, plotDendrogram=True, transform='normalize')
 
-    multiple_tabs_interactive_plot_clusters(clustering_results[1], 'pattern')
+    from scipy.spatial.distance import squareform
+    import pandas as pd
 
+    dist_matrix = squareform(clustering_results[0])
+
+    pd.DataFrame(dist_matrix).to_csv("dist_matrix.csv", index=False, header=False)
+
+    multiple_tabs_interactive_plot_clusters(clustering_results[1], 'pattern_dtw')
 
 if __name__ == "__main__":
     main()
