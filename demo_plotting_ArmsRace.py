@@ -7,7 +7,7 @@ from simclstr.clusterer import read_time_series, perform_clustering, simulate_fr
 import os
 
 def main():
-    model_path = os.path.expanduser('arms race.mdl')
+    model_path = os.path.expanduser('Data Files/arms race.mdl')
 
     parameter_set = {"initial arms expenditure A": [200, 400],
                     "initial arms expenditure B": [200, 400],

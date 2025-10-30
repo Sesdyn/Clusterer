@@ -4,7 +4,7 @@ from simclstr.clusterer import read_time_series, perform_clustering
 import os
 
 def main():
-    model_path_vensim = os.path.expanduser('~/Desktop/SESDYN_Basic_A/Basic_A_Vensim.xlsx')
+    model_path_vensim = os.path.expanduser('Data Files/Basic_A_Vensim.xlsx')
 
     read_data = read_time_series(model_path_vensim)
 

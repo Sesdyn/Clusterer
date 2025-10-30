@@ -4,7 +4,7 @@ from simclstr.clusterer import read_time_series, perform_clustering, simulate_fr
 import os
 
 def main():
-    model_path = os.path.expanduser('~/Desktop/temperature model/temperature model.mdl')
+    model_path = os.path.expanduser('Data Files/temperature model.mdl')
 
     parameter_set = {'Initial actual temperature': [15, 20, 25],
                     'Initial measured temperature': [15, 20, 25],

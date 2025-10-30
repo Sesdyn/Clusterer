@@ -1,0 +1,135 @@
+{UTF-8}
+Actual Temperature= INTEG (
+	Change in temperature,
+		Initial actual temperature)
+	~	
+	~		|
+
+Adjustment time=
+	15
+	~	
+	~		|
+
+Change in measured temperature=
+	(Actual Temperature-Measured temperature)/Measurement delay
+	~	
+	~		|
+
+Change in temperature=
+	(Desired temperature-Measured temperature)/Adjustment time
+	~	
+	~		|
+
+Desired temperature=
+	20
+	~	
+	~		|
+
+Initial actual temperature=
+	10
+	~	
+	~		|
+
+Initial measured temperature=
+	10
+	~	
+	~		|
+
+Measured temperature= INTEG (
+	Change in measured temperature,
+		Initial measured temperature)
+	~	
+	~		|
+
+Measurement delay=
+	15
+	~	
+	~		|
+
+********************************************************
+	.Control
+********************************************************~
+		Simulation Control Parameters
+	|
+
+FINAL TIME  = 100
+	~	Minute
+	~	The final time for the simulation.
+	|
+
+INITIAL TIME  = 0
+	~	Minute
+	~	The initial time for the simulation.
+	|
+
+SAVEPER  = 
+        TIME STEP 
+	~	Minute [0,?]
+	~	The frequency with which output is stored.
+	|
+
+TIME STEP  = 0.03125
+	~	Minute [0,?]
+	~	The time step for the simulation.
+	|
+
+\\\---/// Sketch information - do not modify anything except names
+V300  Do not put anything below this section - it will be ignored
+*View 1
+$-1--1--1,0,|12||-1--1--1|-1--1--1|-1--1--1|-1--1--1|-1--1--1|96,96,100,0
+10,1,Actual Temperature,764,169,48,22,3,3,0,0,-1,0,0,0,0,0,0,0,0,0
+12,2,48,338,170,10,8,0,3,0,0,-1,0,0,0,0,0,0,0,0,0
+1,3,5,2,100,0,0,22,0,192,0,-1--1--1,,1|(437,170)|
+1,4,5,1,4,0,0,22,0,192,0,-1--1--1,,1|(627,170)|
+11,5,0,532,170,6,8,34,3,0,0,1,0,0,0,0,0,0,0,0,0
+10,6,Change in temperature,532,200,56,22,40,3,0,0,-1,0,0,0,0,0,0,0,0,0
+10,7,Desired temperature,171,289,51,22,8,3,0,0,-1,0,0,0,0,0,0,0,0,0
+10,8,Adjustment time,253,412,42,22,8,3,0,0,-1,0,0,0,0,0,0,0,0,0
+10,9,Measured temperature,654,448,56,22,3,3,0,0,-1,0,0,0,0,0,0,0,0,0
+12,10,48,1117,455,10,8,0,3,0,0,-1,0,0,0,0,0,0,0,0,0
+1,11,13,10,100,0,0,22,0,192,0,-1--1--1,,1|(1010,455)|
+1,12,13,9,4,0,0,22,0,192,0,-1--1--1,,1|(806,455)|
+11,13,0,908,455,6,8,34,3,0,0,1,0,0,0,0,0,0,0,0,0
+10,14,Change in measured temperature,908,485,50,22,40,3,0,0,-1,0,0,0,0,0,0,0,0,0
+10,15,Measurement delay,1112,296,48,22,8,3,0,0,-1,0,0,0,0,0,0,0,0,0
+10,16,Initial actual temperature,1012,95,61,22,8,3,0,0,-1,0,0,0,0,0,0,0,0,0
+10,17,Initial measured temperature,456,550,42,22,8,3,0,0,-1,0,0,0,0,0,0,0,0,0
+1,18,7,6,0,0,0,0,0,192,0,-1--1--1,,1|(0,0)|
+1,19,8,6,0,0,0,0,0,192,0,-1--1--1,,1|(0,0)|
+1,20,9,6,0,0,0,0,0,192,0,-1--1--1,,1|(0,0)|
+1,21,17,9,0,0,0,0,0,192,1,-1--1--1,,1|(0,0)|
+1,22,16,1,0,0,0,0,0,192,1,-1--1--1,,1|(0,0)|
+1,23,1,14,0,0,0,0,0,192,0,-1--1--1,,1|(0,0)|
+1,24,9,14,1,0,0,0,0,192,0,-1--1--1,,1|(766,413)|
+1,25,15,14,0,0,0,0,0,192,0,-1--1--1,,1|(0,0)|
+///---\\\
+:L<%^E!@
+5:Measured temperature
+19:100,0
+24:0
+25:0
+26:0
+23:0
+15:0,0,0,0,0,0
+27:0,
+34:0,
+42:0
+72:0
+73:0
+95:0
+96:0
+97:0
+77:0
+78:0
+102:1
+93:0
+94:0
+92:0
+91:0
+90:0
+87:0
+75:
+43:
+103:8,8,8,3,8
+105:0,0,0,0,0,0,0,0,0,0
+104:Vensim Sans|12||0-0-0|0-0-0|-1--1--1|0-0-255|192-192-192|-1--1--1
