@@ -34,6 +34,12 @@ def main():
 
     pd.DataFrame(dist_matrix).to_csv("dist_matrix.csv", index=False, header=False)
 
+    starting_points = {idx: each_ts.starting_points for idx, each_ts in enumerate(clustering_results[1])}
+
+    print(starting_points)
+
+    pd.DataFrame(starting_points).to_csv("starting_points.csv", index=False, header=False)
+
     multiple_tabs_interactive_plot_clusters(clustering_results[1], 'pattern_dtw')
 
 if __name__ == "__main__":

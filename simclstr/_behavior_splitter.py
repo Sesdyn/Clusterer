@@ -29,7 +29,6 @@ def _construct_features(data: np.ndarray, significanceLevel: float = 0.01) -> Li
 
     return features
 
-
 def _split_behavior(data_series: np.ndarray, slope: np.ndarray, curvature: np.ndarray, significanceLevel: float = 0.01) -> np.ndarray:
     """Split a time series into sections of different atomic behavior modes.
 
@@ -69,14 +68,16 @@ def _split_behavior(data_series: np.ndarray, slope: np.ndarray, curvature: np.nd
     transition_points = np.flatnonzero(transitions)
     number_of_sections = len(transition_points) + 1
 
-    feature_vector = np.empty((2, number_of_sections))
+    feature_vector = np.empty((3, number_of_sections))
 
     if number_of_sections == 1:
         feature_vector[0, 0] = sign_slope[0]
         feature_vector[1, 0] = sign_curvature[0]
+        feature_vector[2, 0] = 0
     else:
         section_starts = np.concatenate(([0], transition_points + 1))
         feature_vector[0] = sign_slope[section_starts]
         feature_vector[1] = sign_curvature[section_starts]
+        feature_vector[2] = section_starts
 
     return feature_vector
