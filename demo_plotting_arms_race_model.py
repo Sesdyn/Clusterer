@@ -7,7 +7,7 @@ from simclstr.clusterer import read_time_series, perform_clustering, simulate_fr
 import os
 
 def main():
-    model_path = os.path.expanduser('Data Files/arms race.mdl')
+    model_path = os.path.expanduser('data_files/arms race.mdl')
 
     parameter_set = {"initial arms expenditure A": [200, 400],
                     "initial arms expenditure B": [200, 400],
@@ -25,22 +25,16 @@ def main():
 
     simulation_results = simulate_from_vensim(model_path, parameter_set, output_of_interest)
 
-    clustering_results = perform_clustering(simulation_results, distance='pattern_dtw', cMethod='maxclust', cValue = 6, plotDendrogram=True, transform='normalize')
+    clustering_results = perform_clustering(simulation_results, distance='pattern_wdtw', cMethod='maxclust', cValue = 6, plotDendrogram=True, transform='normalize')
 
     from scipy.spatial.distance import squareform
     import pandas as pd
 
     dist_matrix = squareform(clustering_results[0])
 
-    pd.DataFrame(dist_matrix).to_csv("dist_matrix.csv", index=False, header=False)
+    pd.DataFrame(dist_matrix).to_csv("data_files/Arms_Race_dist_matrix.csv", index=False, header=False)
 
-    starting_points = {idx: each_ts.starting_points for idx, each_ts in enumerate(clustering_results[1])}
-
-    print(starting_points)
-
-    pd.DataFrame(starting_points).to_csv("starting_points.csv", index=False, header=False)
-
-    multiple_tabs_interactive_plot_clusters(clustering_results[1], 'pattern_dtw')
+    multiple_tabs_interactive_plot_clusters(clustering_results[1], 'pattern_wdtw')
 
 if __name__ == "__main__":
     main()

@@ -17,6 +17,7 @@ from dash import dcc, html, Input, Output
 import webbrowser
 import threading
 import time
+import re
 
 if TYPE_CHECKING:
     from .clusterer import Cluster
@@ -84,6 +85,66 @@ def plot_clusters(cluster_list: List["Cluster"], dist: str, mode: str = 'show', 
         plt.show()
     elif mode=='save':
         plt.savefig('{0}.png'.format(fname))
+
+
+def parse_representative_member_to_html(label_string):
+    """
+    Parse a representative member label string and return HTML table rows.
+    
+    Parameters:
+    -----------
+    label_string : str
+        The label string containing parameter key-value pairs
+        
+    Returns:
+    --------
+    list
+        List of html.Tr elements for display in Dash
+    """
+    params = {}
+    
+    parts = label_string.split(',')
+    
+    for part in parts:
+        part = part.strip()
+        match = re.match(r'(.+?)\s*=\s*(.+)', part)
+        if match:
+            key = match.group(1).strip()
+            value = match.group(2).strip()
+            
+            try:
+                value = float(value) if '.' in value else int(value)
+            except ValueError:
+                pass
+            
+            params[key] = value
+    
+    rows = []
+    for key, value in params.items():
+        rows.append(html.Tr([
+            html.Td(key, style={
+                'padding': '8px 12px',
+                'borderBottom': '1px solid #e2e8f0',
+                'fontSize': '13px',
+                'color': '#34495e',
+                'fontWeight': '500',
+                'whiteSpace': 'normal',
+                'wordBreak': 'break-word',
+                'verticalAlign': 'top'
+            }),
+            html.Td(str(value), style={
+                'padding': '8px 12px',
+                'borderBottom': '1px solid #e2e8f0',
+                'fontSize': '13px',
+                'color': '#2c3e50',
+                'textAlign': 'right',
+                'whiteSpace': 'normal',
+                'wordBreak': 'break-word',
+                'verticalAlign': 'top'
+            })
+        ]))
+    
+    return rows
 
 
 def interactive_plot_clusters(cluster_list: List["Cluster"], dist: str, no_cols: int = 3, port: int = 8050) -> None:
@@ -172,7 +233,7 @@ def interactive_plot_clusters(cluster_list: List["Cluster"], dist: str, no_cols:
                     line=dict(width=line_width, color=line_color),
                     opacity=opacity,
                     customdata=[ts_id] * len(t),
-                    hovertemplate=f"<b>{each_ts.index}: {each_ts.label}</b><br>" +
+                    hovertemplate=f"<b>Index: {each_ts.index}</b><br>" +
                                 "Time: %{x}<br>" +
                                 "Value: %{y:.3f}<br>" +
                                 f"Cluster: {clust.cluster_id}<br>" +
@@ -185,6 +246,7 @@ def interactive_plot_clusters(cluster_list: List["Cluster"], dist: str, no_cols:
     
     cluster_fig.update_layout(
         height=280 * cluster_rows,
+        autosize=True,
         showlegend=False,
         clickmode='event+select',
         plot_bgcolor='#f8f9fa',
@@ -212,7 +274,8 @@ def interactive_plot_clusters(cluster_list: List["Cluster"], dist: str, no_cols:
             dcc.Graph(
                 id='cluster-plot',
                 figure=cluster_fig,
-                style={'marginBottom': '2px'}
+                config={'responsive': True},
+                style={'marginBottom': '2px', 'width': '100%'}
             )
         ], style={'marginTop': '0px'}),
         
@@ -225,14 +288,15 @@ def interactive_plot_clusters(cluster_list: List["Cluster"], dist: str, no_cols:
                 'borderRadius': '16px',
                 'padding': '18px',
                 'margin': '4px auto',
-                'width': 'calc(100% - 160px)',
+                'width': '100%',
+                'maxWidth': '1400px',
                 'boxShadow': '0 10px 25px rgba(0, 0, 0, 0.08)',
                 'minHeight': f'{info_panel_height}px',
-                'maxHeight': 'none',
-                'overflow': 'visible',
+                'maxHeight': '60vh',
+                'overflowX': 'auto',
+                'overflowY': 'auto',
                 'boxSizing': 'border-box',
-                'resize': 'both',
-                'overflowY': 'visible'
+                'resize': 'vertical'
             })
         ])
     ], style={
@@ -278,16 +342,32 @@ def interactive_plot_clusters(cluster_list: List["Cluster"], dist: str, no_cols:
                 ts_info = time_series_data[customdata]
                 cluster_info = cluster_data[ts_info['cluster_id']]
                 
-                return [html.Div([
-                    html.Div([
-                        # Left column
+                label_str = str(cluster_info['best_representative_member'])
+                parsed_rows = parse_representative_member_to_html(label_str)
+                has_parsed = len(parsed_rows) > 0
+
+                ts_label_str = str(ts_info['name'])
+                ts_parsed_rows = parse_representative_member_to_html(ts_label_str)
+                has_ts_parsed = len(ts_parsed_rows) > 0
+
+                column_base_style = {
+                    'flex': '1 1 260px',
+                    'minWidth': '240px',
+                    'maxWidth': '100%',
+                    'overflow': 'hidden'
+                }
+
+                left_column = html.Div([
                         html.Div([
                             html.Div([
                                 html.Span("Time Series Information", style={'fontWeight': 'bold', 'color': '#34495e', 'fontSize': '16px'})
                             ], style={'marginBottom': '15px', 'overflow': 'hidden'}),
                             html.Div([
                                 html.Span("Label:", style={'fontWeight': 'bold', 'color': '#34495e', 'minWidth': '60px', 'display': 'inline-block'}),
-                                html.Span(f"{ts_info['index_of_ts']}: {ts_info['name']}", style={'marginLeft': '4px', 'overflow': 'hidden', 'textOverflow': 'ellipsis', 'whiteSpace': 'nowrap'})
+                                html.Span(
+                                    f"{ts_info['index_of_ts']}" if has_ts_parsed else f"{ts_info['index_of_ts']}: {ts_info['name']}",
+                                    style={'marginLeft': '4px', 'overflow': 'hidden', 'textOverflow': 'ellipsis', 'whiteSpace': 'nowrap'}
+                                )
                             ], style={'marginBottom': '10px', 'overflow': 'hidden'}),
                             html.Div([
                                 html.Span("Length:", style={'fontWeight': 'bold', 'color': '#34495e', 'minWidth': '60px', 'display': 'inline-block'}),
@@ -297,10 +377,10 @@ def interactive_plot_clusters(cluster_list: List["Cluster"], dist: str, no_cols:
                                 html.Span("Mean:", style={'fontWeight': 'bold', 'color': '#34495e', 'minWidth': '60px', 'display': 'inline-block'}),
                                 html.Span(f" {ts_info['mean']:.4f}", style={'marginLeft': '4px', 'overflow': 'hidden', 'textOverflow': 'ellipsis', 'whiteSpace': 'nowrap'})
                             ], style={'marginBottom': '10px', 'overflow': 'hidden'})
-                        ], style={'width': '40%', 'display': 'inline-block', 'verticalAlign': 'top', 'overflow': 'hidden'}),
-                        
-                        # Middle column
-                        html.Div([
+                        ], style=column_base_style)
+                ])
+
+                middle_column = html.Div([
                             html.Div([
                                 html.Span("Std Dev:", style={'fontWeight': 'bold', 'color': '#34495e', 'minWidth': '80px', 'display': 'inline-block'}),
                                 html.Span(f" {ts_info['std']:.4f}", style={'marginLeft': '4px', 'overflow': 'hidden', 'textOverflow': 'ellipsis', 'whiteSpace': 'nowrap'})
@@ -318,13 +398,9 @@ def interactive_plot_clusters(cluster_list: List["Cluster"], dist: str, no_cols:
                                 html.Span(" Yes" if ts_info["is_representative"] else " No", 
                                          style={'marginLeft': '4px', 'color': '#34495e' if ts_info["is_representative"] else '#34495e', 'overflow': 'hidden', 'textOverflow': 'ellipsis', 'whiteSpace': 'nowrap'})
                             ], style={'marginBottom': '10px', 'overflow': 'hidden'})
-                        ], style={'width': '20%', 'display': 'inline-block', 'verticalAlign': 'top', 'marginLeft': '4%', 'overflow': 'hidden'}),
+                        ], style={**column_base_style, 'marginLeft': '0'})
                         
-                        # Gray vertical line
-                        html.Div(style={'width': '1px', 'backgroundColor': '#cccccc', 'height': '120px', 'display': 'inline-block', 'marginLeft': '2%', 'marginRight': '2%', 'verticalAlign': 'top'}),
-                        
-                        # Right column
-                        html.Div([
+                right_column = html.Div([
                             html.Div([
                                 html.Span("Cluster Information", style={'fontWeight': 'bold', 'color': '#34495e', 'fontSize': '16px'})
                             ], style={'marginBottom': '15px', 'overflow': 'hidden'}),
@@ -337,12 +413,42 @@ def interactive_plot_clusters(cluster_list: List["Cluster"], dist: str, no_cols:
                                 html.Span(f" {cluster_info['number_of_members']}", style={'marginLeft': '4px', 'overflow': 'hidden', 'textOverflow': 'ellipsis', 'whiteSpace': 'nowrap'})
                             ], style={'marginBottom': '10px', 'overflow': 'hidden'}),
                             html.Div([
-                                html.Span("Representative Member:", style={'fontWeight': 'bold', 'color': '#34495e', 'minWidth': '100px', 'display': 'inline-block'}),
-                                html.Span(f" {cluster_info['best_representative_member_index']}: {cluster_info['best_representative_member']}", style={'marginLeft': '4px', 'overflow': 'hidden', 'textOverflow': 'ellipsis', 'whiteSpace': 'nowrap'})
+                                html.Span("Representative Index:", style={'fontWeight': 'bold', 'color': '#34495e', 'minWidth': '100px', 'display': 'inline-block'}),
+                                html.Span(
+                                    f"{cluster_info['best_representative_member_index']}" if has_parsed else f"{cluster_info['best_representative_member_index']}: {cluster_info['best_representative_member']}",
+                                    style={'marginLeft': '4px', 'overflow': 'hidden', 'textOverflow': 'ellipsis', 'whiteSpace': 'nowrap'}
+                                )
                             ], style={'marginBottom': '10px', 'overflow': 'hidden'})
-                        ], style={'width': '30%', 'display': 'inline-block', 'verticalAlign': 'top', 'overflow': 'hidden'})
-                    ], style={'wordWrap': 'break-word'})
-                ])]
+                        ], style=column_base_style)
+
+                third_column = None
+                if has_parsed:
+                    third_column = html.Div([
+                        html.Div([
+                            html.Table([
+                                html.Thead(html.Tr([
+                                    html.Th('Parameter', style={'padding': '8px 12px', 'borderBottom': '2px solid #34495e', 'fontSize': '13px', 'fontWeight': 'bold', 'color': '#34495e', 'textAlign': 'left'}),
+                                    html.Th('Value', style={'padding': '8px 12px', 'borderBottom': '2px solid #34495e', 'fontSize': '13px', 'fontWeight': 'bold', 'color': '#34495e', 'textAlign': 'right'})
+                                ])),
+                                html.Tbody(parsed_rows)
+                            ], style={'width': '100%', 'borderCollapse': 'collapse', 'fontSize': '13px', 'tableLayout': 'fixed', 'minWidth': '320px'})
+                        ], style={'width': '100%', 'overflowX': 'auto'})
+                    ], style={**column_base_style, 'overflowY': 'auto', 'maxHeight': '40vh'})
+
+                row_children = [left_column, middle_column, right_column]
+                if third_column is not None:
+                    row_children.append(third_column)
+
+                return [html.Div(
+                    row_children,
+                    style={
+                        'display': 'flex',
+                        'flexWrap': 'wrap',
+                        'gap': '12px',
+                        'alignItems': 'flex-start',
+                        'wordWrap': 'break-word'
+                    }
+                )]
         except (KeyError, IndexError, TypeError):
             return [
                 html.Div([
@@ -574,7 +680,7 @@ def _create_cluster_tab_content(clust, colors, time_series_data, cluster_data):
         mode='lines',
         name=repr_name,
         line=dict(width=3, color='#e74c3c'),
-        hovertemplate=f"<b>{repr_index}: {repr_name}</b><br>Time: %{{x}}<br>Value: %{{y:.3f}}<extra></extra>"
+        hovertemplate=f"<b>{repr_index}</b><br>Time: %{{x}}<br>Value: %{{y:.3f}}<extra></extra>"
     ))
     
     repr_fig.update_layout(
@@ -605,7 +711,7 @@ def _create_cluster_tab_content(clust, colors, time_series_data, cluster_data):
             line=dict(width=line_width, color=line_color),
             opacity=opacity,
             customdata=[ts_id] * len(t),
-            hovertemplate=f"<b>{each_ts.index}: {each_ts.label}</b><br>Time: %{{x}}<br>Value: %{{y:.3f}}<br>{'Representative' if is_repr else ''}<extra></extra>"
+            hovertemplate=f"<b>Index: {each_ts.index}</b><br>Time: %{{x}}<br>Value: %{{y:.3f}}<br>{'Representative' if is_repr else ''}<extra></extra>"
         ))
     
     all_series_fig.update_layout(
@@ -618,6 +724,45 @@ def _create_cluster_tab_content(clust, colors, time_series_data, cluster_data):
     )
     
     # Create cluster info panel content
+    label_str = str(clust.best_representative_member.label)
+    parsed_rows = parse_representative_member_to_html(label_str)
+    repr_params_component = (
+        html.Div([
+            html.Table([
+            html.Thead(html.Tr([
+                html.Th('Parameter', style={
+                    'padding': '8px 12px',
+                    'borderBottom': '2px solid #34495e',
+                    'fontSize': '13px',
+                    'fontWeight': 'bold',
+                    'color': '#34495e',
+                    'textAlign': 'left'
+                }),
+                html.Th('Value', style={
+                    'padding': '8px 12px',
+                    'borderBottom': '2px solid #34495e',
+                    'fontSize': '13px',
+                    'fontWeight': 'bold',
+                    'color': '#34495e',
+                    'textAlign': 'right'
+                })
+            ])),
+                html.Tbody(parsed_rows)
+            ], style={
+                'width': '100%',
+                'borderCollapse': 'collapse',
+                'fontSize': '13px',
+                'marginTop': '8px',
+                'tableLayout': 'fixed',
+                'minWidth': '320px'
+            })
+        ], style={
+            'width': '100%',
+            'overflowX': 'auto'
+        }) if parsed_rows else html.Div([
+            html.Span(label_str, style={'fontSize': '13px', 'color': '#2c3e50'})
+        ])
+    )
     cluster_info_content = html.Div([
         html.H3("Cluster Information", style={
             'color': '#1a202c', 
@@ -635,12 +780,12 @@ def _create_cluster_tab_content(clust, colors, time_series_data, cluster_data):
             'fontSize': '14px',
             'lineHeight': '1.5'
         }),
-        html.P([html.Strong("Representative Member: "), str(clust.best_representative_member.index) + ': ' + str(clust.best_representative_member.label)], style={
-            'marginBottom': '8px',
-            'fontSize': '14px',
-            'lineHeight': '1.5',
-            'wordBreak': 'break-word'
-        })
+        html.Div([
+            html.P([html.Strong("Representative Member: "), 
+                    str(clust.best_representative_member.index)], 
+                style={'marginBottom': '12px', 'fontSize': '14px', 'lineHeight': '1.5'}),
+            repr_params_component
+        ], style={'marginBottom': '8px'})
     ], style={
         'backgroundColor': '#ffffff',
         'border': '1px solid #e2e8f0',
@@ -858,20 +1003,24 @@ def _create_cluster_callbacks(app, cluster_id, time_series_data, cluster_data):
                 print(f"Cluster id: {ts_info['cluster_id']}")
                 print("-" * 80)
                 
-                return [
-                    html.Div([
-                        # Left column
-                        html.Div([
+                label_str = str(ts_info['name'])
+                parsed_rows = parse_representative_member_to_html(label_str)
+                has_parsed = len(parsed_rows) > 0
+
+                label_content = [html.Strong("Label: "), ts_info['index_of_ts']] if has_parsed else [html.Strong("Label: "), ts_info['index_of_ts'], ': ', ts_info['name']]
+
+                left_col = html.Div([
                             html.H4("Time Series Information", style={
                                 'color': '#34495e', 
                                 'marginBottom': '15px',
                                 'fontSize': '16px',
                                 'fontWeight': 'bold'
                             }),
-                            html.P([html.Strong("Label: "), ts_info['index_of_ts'], ': ', ts_info['name']], style={
+                            html.P(label_content, style={
                                 'marginBottom': '10px',
                                 'fontSize': '14px',
-                                'lineHeight': '1.4'
+                                'lineHeight': '1.4',
+                                'wordBreak': 'break-word'
                             }),
                             html.P([html.Strong("Length: "), str(ts_info['length'])], style={
                                 'marginBottom': '10px',
@@ -889,13 +1038,14 @@ def _create_cluster_callbacks(app, cluster_id, time_series_data, cluster_data):
                                 'lineHeight': '1.4'
                             })
                         ], style={
-                            'width': '35%', 
+                            'flex': '1 1 320px',
+                            'minWidth': '280px',
                             'flexShrink': '0',
-                            'paddingRight': '15px'
-                        }),
-                        
-                        # Right column
-                        html.Div([
+                            'paddingRight': '15px',
+                            'boxSizing': 'border-box'
+                        })
+
+                middle_col = html.Div([
                             html.H4("Statistical Details", style={
                                 'color': '#34495e', 
                                 'marginBottom': '15px',
@@ -923,18 +1073,78 @@ def _create_cluster_callbacks(app, cluster_id, time_series_data, cluster_data):
                                 'lineHeight': '1.4'
                             })
                         ], style={
-                            'width': '62%', 
+                            'flex': '1 1 300px',
+                            'minWidth': '260px',
                             'flexShrink': '0',
                             'marginLeft': '3%',
-                            'paddingLeft': '50px',
-                            'borderLeft': '1px solid #e2e8f0'
+                            'paddingLeft': '40px',
+                            'borderLeft': '1px solid #e2e8f0',
+                            'boxSizing': 'border-box'
                         })
+
+                third_col = None
+                if has_parsed:
+                    third_col = html.Div([
+                        html.H4("Label Parameters", style={
+                            'color': '#34495e',
+                            'marginBottom': '15px',
+                            'fontSize': '16px',
+                            'fontWeight': 'bold'
+                        }),
+                        html.Div([
+                            html.Table([
+                                html.Thead(html.Tr([
+                                    html.Th('Parameter', style={
+                                        'padding': '8px 12px',
+                                        'borderBottom': '2px solid #34495e',
+                                        'fontSize': '13px',
+                                        'fontWeight': 'bold',
+                                        'color': '#34495e',
+                                        'textAlign': 'left'
+                                    }),
+                                    html.Th('Value', style={
+                                        'padding': '8px 12px',
+                                        'borderBottom': '2px solid #34495e',
+                                        'fontSize': '13px',
+                                        'fontWeight': 'bold',
+                                        'color': '#34495e',
+                                        'textAlign': 'right'
+                                    })
+                                ])),
+                                html.Tbody(parsed_rows)
+                            ], style={
+                                'width': '100%',
+                                'borderCollapse': 'collapse',
+                                'fontSize': '13px',
+                                'tableLayout': 'fixed',
+                                'minWidth': '320px'
+                            })
+                        ], style={'width': '100%', 'overflowX': 'auto'})
                     ], style={
+                        'flex': '1 1 260px',
+                        'minWidth': '240px',
+                        'flexShrink': '0',
+                        'marginLeft': '3%',
+                        'paddingLeft': '40px',
+                        'borderLeft': '1px solid #e2e8f0',
+                        'maxHeight': '220px',
+                        'overflowY': 'auto',
+                        'boxSizing': 'border-box'
+                    })
+
+                row_children = [left_col, middle_col]
+                if third_col is not None:
+                    row_children.append(third_col)
+
+                return [
+                    html.Div(row_children, style={
                         'position': 'relative',
                         'zIndex': '1',
                         'display': 'flex',
                         'flexDirection': 'row',
                         'alignItems': 'flex-start',
+                        'flexWrap': 'wrap',
+                        'gap': '16px',
                         'width': '100%'
                     })
                 ]
@@ -963,6 +1173,9 @@ def _create_representatives_callback(app, representative_data, cluster_data):
             if customdata and customdata in representative_data:
                 repr_info = representative_data[customdata]
                 cluster_info = cluster_data[repr_info['cluster_id']]
+                rep_label_str = str(cluster_info['best_representative_member'])
+                rep_parsed_rows = parse_representative_member_to_html(rep_label_str)
+                has_rep_parsed = len(rep_parsed_rows) > 0
                 
                 # Print information to terminal
                 print(f"\nRepresentative Time Series Clicked:")
@@ -993,16 +1206,18 @@ def _create_representatives_callback(app, representative_data, cluster_data):
                                     'fontSize': '14px',
                                     'lineHeight': '1.4'
                                 }),
-                                html.P([html.Strong("Representative Label: "), str(repr_info['index_of_ts']) + ': ' + str(cluster_info['best_representative_member'])], style={
+                                html.P([html.Strong("Representative Label: "), str(repr_info['index_of_ts']) if has_rep_parsed else str(repr_info['index_of_ts']) + ': ' + str(cluster_info['best_representative_member'])], style={
                                     'marginBottom': '8px',
                                     'fontSize': '14px',
                                     'lineHeight': '1.4',
                                     'wordBreak': 'break-word'
                                 })
                             ], style={
-                                'width': '48%', 
+                                'flex': '1 1 360px',
+                                'minWidth': '300px',
                                 'flexShrink': '0',
-                                'paddingRight': '15px'
+                                'paddingRight': '15px',
+                                'boxSizing': 'border-box'
                             }),
                             
                             html.Div([
@@ -1028,16 +1243,68 @@ def _create_representatives_callback(app, representative_data, cluster_data):
                                     'lineHeight': '1.4'
                                 })
                             ], style={
-                                'width': '48%', 
+                                'flex': '1 1 300px',
+                                'minWidth': '260px',
                                 'flexShrink': '0',
-                                'marginLeft': '4%',
-                                'paddingLeft': '50px',
-                                'borderLeft': '1px solid #e2e8f0'
-                            })
+                                'marginLeft': '3%',
+                                'paddingLeft': '40px',
+                                'borderLeft': '1px solid #e2e8f0',
+                                'boxSizing': 'border-box'
+                            }),
+
+                            html.Div([
+                                html.H4("Label Parameters", style={
+                                    'color': '#34495e', 
+                                    'marginBottom': '15px',
+                                    'fontSize': '16px',
+                                    'fontWeight': 'bold'
+                                }),
+                                html.Div([
+                                    html.Table([
+                                        html.Thead(html.Tr([
+                                            html.Th('Parameter', style={
+                                                'padding': '8px 12px',
+                                                'borderBottom': '2px solid #34495e',
+                                                'fontSize': '13px',
+                                                'fontWeight': 'bold',
+                                                'color': '#34495e',
+                                                'textAlign': 'left'
+                                            }),
+                                            html.Th('Value', style={
+                                                'padding': '8px 12px',
+                                                'borderBottom': '2px solid #34495e',
+                                                'fontSize': '13px',
+                                                'fontWeight': 'bold',
+                                                'color': '#34495e',
+                                                'textAlign': 'right'
+                                            })
+                                        ])),
+                                        html.Tbody(rep_parsed_rows)
+                                    ], style={
+                                        'width': '100%',
+                                        'borderCollapse': 'collapse',
+                                        'fontSize': '13px',
+                                        'tableLayout': 'fixed',
+                                        'minWidth': '320px'
+                                    })
+                                ], style={'width': '100%', 'overflowX': 'auto'})
+                            ], style={
+                                'flex': '1 1 280px',
+                                'minWidth': '240px',
+                                'flexShrink': '0',
+                                'marginLeft': '3%',
+                                'paddingLeft': '40px',
+                                'borderLeft': '1px solid #e2e8f0',
+                                'maxHeight': '220px',
+                                'overflowY': 'auto',
+                                'boxSizing': 'border-box'
+                            }) if has_rep_parsed else html.Div()
                         ], style={
                             'display': 'flex',
                             'flexDirection': 'row',
                             'alignItems': 'flex-start',
+                            'flexWrap': 'wrap',
+                            'gap': '16px',
                             'width': '100%'
                         })
                     ], style={

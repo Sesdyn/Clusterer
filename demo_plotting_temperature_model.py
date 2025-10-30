@@ -4,7 +4,7 @@ from simclstr.clusterer import read_time_series, perform_clustering, simulate_fr
 import os
 
 def main():
-    model_path = os.path.expanduser('Data Files/temperature model.mdl')
+    model_path = os.path.expanduser('data_files/temperature model.mdl')
 
     parameter_set = {'Initial actual temperature': [15, 20, 25],
                     'Initial measured temperature': [15, 20, 25],
@@ -17,9 +17,9 @@ def main():
 
     simulation_results = simulate_from_vensim(model_path, parameter_set, output_of_interest)
 
-    clustering_results = perform_clustering(simulation_results, distance='pattern', cMethod='maxclust', cValue = 6, plotDendrogram=True, transform='normalize')
+    clustering_results = perform_clustering(simulation_results, distance='pattern_wdtw', cMethod='maxclust', cValue = 6, plotDendrogram=True, transform='normalize')
 
-    multiple_tabs_interactive_plot_clusters(clustering_results[1], 'pattern')
+    multiple_tabs_interactive_plot_clusters(clustering_results[1], 'pattern_wdtw')
 
 
 if __name__ == "__main__":

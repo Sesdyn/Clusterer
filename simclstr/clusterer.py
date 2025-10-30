@@ -13,6 +13,7 @@ import pandas as pd
 from typing import List, Tuple, Dict, Any, Union, Callable
 from ._distance_pattern import _distance_pattern
 from ._distance_pattern_dtw import _distance_pattern_dtw
+from ._distance_pattern_wdtw import _distance_pattern_wdtw
 from ._distance_scipy import _distance_scipy
 from ._distance_dtw import _distance_dtw
 from .plotting import _plot_dendrogram
@@ -22,6 +23,7 @@ import itertools
 _distance_functions: Dict[str, Callable] = {
     'pattern': _distance_pattern,
     'pattern_dtw': _distance_pattern_dtw,
+    'pattern_wdtw': _distance_pattern_wdtw,
     'dtw': _distance_dtw,
 }
 
@@ -168,6 +170,10 @@ def simulate_from_vensim(model_path: str, parameter_set: Dict[str, Union[float, 
         label = ', '.join([f"{name}={value}" for name, value in current_params.items()])
         list_of_ts_objects.append(TimeSeries(label, time_series_data))
     
+    generated_python_file = os.path.splitext(model_path)[0] + '.py'
+    if os.path.exists(generated_python_file):
+        os.remove(generated_python_file)
+
     return list_of_ts_objects
 
 

@@ -4,13 +4,13 @@ from simclstr.clusterer import read_time_series, perform_clustering
 import os
 
 def main():
-    model_path_vensim = os.path.expanduser('Data Files/Basic_A_Vensim.xlsx')
+    model_path_vensim = os.path.expanduser('data_files/Basic_A_Vensim.xlsx')
 
     read_data = read_time_series(model_path_vensim)
 
-    clustering_results = perform_clustering(read_data, distance='pattern_dtw', cMethod='maxclust', cValue = 6, plotDendrogram=True, transform='normalize')
+    clustering_results = perform_clustering(read_data, distance='pattern_wdtw', cMethod='maxclust', cValue = 6, plotDendrogram=True, transform='normalize')
 
-    multiple_tabs_interactive_plot_clusters(clustering_results[1], 'pattern_dtw')
+    multiple_tabs_interactive_plot_clusters(clustering_results[1], 'pattern_wdtw')
 
 if __name__ == "__main__":
     main()
