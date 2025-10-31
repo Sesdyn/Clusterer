@@ -94,13 +94,13 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">simclstr.plotting</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_clusters</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
-<span class="n">model_path_vensim</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="s1">&#39;~/Desktop/SESDYN_Basic_A/Basic_A_Vensim.xlsx&#39;</span><span class="p">)</span>
+<span class="n">model_path_vensim</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="s1">&#39;~/Desktop/Clusterer/data_files/Basic_A_Vensim.xlsx&#39;</span><span class="p">)</span>
 
 <span class="n">read_data_vensim</span> <span class="o">=</span> <span class="n">read_time_series</span><span class="p">(</span><span class="n">model_path_vensim</span><span class="p">)</span>
 
-<span class="n">clustering_results_vensim</span> <span class="o">=</span> <span class="n">perform_clustering</span><span class="p">(</span><span class="n">read_data_vensim</span><span class="p">,</span> <span class="n">cMethod</span><span class="o">=</span><span class="s1">&#39;maxclust&#39;</span><span class="p">,</span> <span class="n">cValue</span> <span class="o">=</span> <span class="mi">6</span><span class="p">,</span> <span class="n">plotDendrogram</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="s1">&#39;normalize&#39;</span><span class="p">)</span>
+<span class="n">clustering_results_vensim</span> <span class="o">=</span> <span class="n">perform_clustering</span><span class="p">(</span><span class="n">read_data_vensim</span><span class="p">,</span> <span class="n">distance</span><span class="o">=</span><span class="s1">&#39;pattern_wdtw&#39;</span><span class="p">,</span> <span class="n">cMethod</span><span class="o">=</span><span class="s1">&#39;maxclust&#39;</span><span class="p">,</span> <span class="n">cValue</span> <span class="o">=</span> <span class="mi">6</span><span class="p">,</span> <span class="n">plotDendrogram</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="s1">&#39;normalize&#39;</span><span class="p">)</span>
 
-<span class="n">plot_clusters</span><span class="p">(</span><span class="n">clustering_results_vensim</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;pattern_dtw&#39;</span><span class="p">)</span>
+<span class="n">plot_clusters</span><span class="p">(</span><span class="n">clustering_results_vensim</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;pattern_wdtw&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -122,13 +122,13 @@
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model_path_stellaff</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="s1">&#39;~/Desktop/SESDYN_Basic_A/Basic_A_StellaFF.xlsx&#39;</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model_path_stellaff</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="s1">&#39;~/Desktop/Clusterer/data_files/Basic_A_StellaFF.xlsx&#39;</span><span class="p">)</span>
 
 <span class="n">read_data_stellaff</span> <span class="o">=</span> <span class="n">read_time_series</span><span class="p">(</span><span class="n">model_path_stellaff</span><span class="p">)</span>
 
-<span class="n">clustering_results_stellaff</span> <span class="o">=</span> <span class="n">perform_clustering</span><span class="p">(</span><span class="n">read_data_stellaff</span><span class="p">,</span> <span class="n">cMethod</span><span class="o">=</span><span class="s1">&#39;maxclust&#39;</span><span class="p">,</span> <span class="n">cValue</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span> <span class="n">plotDendrogram</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="s1">&#39;normalize&#39;</span><span class="p">)</span>
+<span class="n">clustering_results_stellaff</span> <span class="o">=</span> <span class="n">perform_clustering</span><span class="p">(</span><span class="n">read_data_stellaff</span><span class="p">,</span> <span class="n">distance</span><span class="o">=</span><span class="s1">&#39;pattern_wdtw&#39;</span><span class="p">,</span> <span class="n">cMethod</span><span class="o">=</span><span class="s1">&#39;maxclust&#39;</span><span class="p">,</span> <span class="n">cValue</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span> <span class="n">plotDendrogram</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="s1">&#39;normalize&#39;</span><span class="p">)</span>
 
-<span class="n">plot_clusters</span><span class="p">(</span><span class="n">clustering_results_stellaff</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;pattern_dtw&#39;</span><span class="p">)</span>
+<span class="n">plot_clusters</span><span class="p">(</span><span class="n">clustering_results_stellaff</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;pattern_wdtw&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -150,13 +150,13 @@
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model_path_stella2</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="s1">&#39;~/Desktop/SESDYN_Basic_A/Basic_A_Stella2.xlsx&#39;</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model_path_stella2</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="s1">&#39;~/Desktop/Clusterer/data_files/Basic_A_Stella2.xlsx&#39;</span><span class="p">)</span>
 
 <span class="n">read_data_stella2</span> <span class="o">=</span> <span class="n">read_time_series</span><span class="p">(</span><span class="n">model_path_stella2</span><span class="p">)</span>
 
-<span class="n">clustering_results_stella2</span> <span class="o">=</span> <span class="n">perform_clustering</span><span class="p">(</span><span class="n">read_data_stella2</span><span class="p">,</span> <span class="n">cMethod</span><span class="o">=</span><span class="s1">&#39;maxclust&#39;</span><span class="p">,</span> <span class="n">cValue</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span> <span class="n">plotDendrogram</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="s1">&#39;normalize&#39;</span><span class="p">)</span>
+<span class="n">clustering_results_stella2</span> <span class="o">=</span> <span class="n">perform_clustering</span><span class="p">(</span><span class="n">read_data_stella2</span><span class="p">,</span> <span class="n">distance</span><span class="o">=</span><span class="s1">&#39;pattern_wdtw&#39;</span><span class="p">,</span> <span class="n">cMethod</span><span class="o">=</span><span class="s1">&#39;maxclust&#39;</span><span class="p">,</span> <span class="n">cValue</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span> <span class="n">plotDendrogram</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="s1">&#39;normalize&#39;</span><span class="p">)</span>
 
-<span class="n">plot_clusters</span><span class="p">(</span><span class="n">clustering_results_stella2</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;pattern_dtw&#39;</span><span class="p">)</span>
+<span class="n">plot_clusters</span><span class="p">(</span><span class="n">clustering_results_stella2</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;pattern_wdtw&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>

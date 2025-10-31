@@ -222,7 +222,7 @@ def _standardize_data(list_of_ts_objects: List['TimeSeries']) -> List['TimeSerie
     return list_of_ts_objects
 
 
-def perform_clustering(list_of_ts_objects: List['TimeSeries'], distance: str = 'pattern_dtw', interClusterDistance: str = 'complete', 
+def perform_clustering(list_of_ts_objects: List['TimeSeries'], distance: str = 'pattern_wdtw', interClusterDistance: str = 'complete', 
             cMethod: str = 'inconsistent', cValue: float = 1.5, plotDendrogram: bool = False, transform: str = 'original', distance_kwargs: dict = {}) -> Tuple[np.ndarray, List['Cluster'], np.ndarray]:
     """
     Cluster time series data using hierarchical clustering.
@@ -240,6 +240,8 @@ def perform_clustering(list_of_ts_objects: List['TimeSeries'], distance: str = '
         ``pattern``: Pattern distance using behavioral features
         
         ``pattern_dtw``: Pattern distance with Dynamic Time Warping
+
+        ``pattern_wdtw``: Pattern distance with Weighted Dynamic Time Warping
 
         ``dtw``: Dynamic Time Warping distance
 
