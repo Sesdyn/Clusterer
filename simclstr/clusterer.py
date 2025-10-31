@@ -232,7 +232,7 @@ def perform_clustering(list_of_ts_objects: List['TimeSeries'], distance: str = '
     list_of_ts_objects : List['TimeSeries']
         List of TimeSeries objects.
 
-    distance : str, default='pattern_dtw'
+    distance : str, default='pattern_wdtw'
         Available distance metrics include:
 
         **Pattern-based distances:**
