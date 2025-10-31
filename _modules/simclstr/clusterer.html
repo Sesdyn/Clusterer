@@ -93,6 +93,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Callable</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._distance_pattern</span><span class="w"> </span><span class="kn">import</span> <span class="n">_distance_pattern</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._distance_pattern_dtw</span><span class="w"> </span><span class="kn">import</span> <span class="n">_distance_pattern_dtw</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._distance_pattern_wdtw</span><span class="w"> </span><span class="kn">import</span> <span class="n">_distance_pattern_wdtw</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._distance_scipy</span><span class="w"> </span><span class="kn">import</span> <span class="n">_distance_scipy</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._distance_dtw</span><span class="w"> </span><span class="kn">import</span> <span class="n">_distance_dtw</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.plotting</span><span class="w"> </span><span class="kn">import</span> <span class="n">_plot_dendrogram</span>
@@ -102,6 +103,7 @@
 <span class="n">_distance_functions</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s1">&#39;pattern&#39;</span><span class="p">:</span> <span class="n">_distance_pattern</span><span class="p">,</span>
     <span class="s1">&#39;pattern_dtw&#39;</span><span class="p">:</span> <span class="n">_distance_pattern_dtw</span><span class="p">,</span>
+    <span class="s1">&#39;pattern_wdtw&#39;</span><span class="p">:</span> <span class="n">_distance_pattern_wdtw</span><span class="p">,</span>
     <span class="s1">&#39;dtw&#39;</span><span class="p">:</span> <span class="n">_distance_dtw</span><span class="p">,</span>
 <span class="p">}</span>
 
@@ -253,6 +255,10 @@
         <span class="n">label</span> <span class="o">=</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">=</span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">current_params</span><span class="o">.</span><span class="n">items</span><span class="p">()])</span>
         <span class="n">list_of_ts_objects</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">TimeSeries</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">time_series_data</span><span class="p">))</span>
     
+    <span class="n">generated_python_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">model_path</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;.py&#39;</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">generated_python_file</span><span class="p">):</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">generated_python_file</span><span class="p">)</span>
+
     <span class="k">return</span> <span class="n">list_of_ts_objects</span></div>
 
 
