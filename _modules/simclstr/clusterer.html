@@ -310,7 +310,7 @@
 
 <div class="viewcode-block" id="perform_clustering">
 <a class="viewcode-back" href="../../api/clusterer.html#simclstr.clusterer.perform_clustering">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">perform_clustering</span><span class="p">(</span><span class="n">list_of_ts_objects</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="s1">&#39;TimeSeries&#39;</span><span class="p">],</span> <span class="n">distance</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;pattern_dtw&#39;</span><span class="p">,</span> <span class="n">interClusterDistance</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;complete&#39;</span><span class="p">,</span> 
+<span class="k">def</span><span class="w"> </span><span class="nf">perform_clustering</span><span class="p">(</span><span class="n">list_of_ts_objects</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="s1">&#39;TimeSeries&#39;</span><span class="p">],</span> <span class="n">distance</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;pattern_wdtw&#39;</span><span class="p">,</span> <span class="n">interClusterDistance</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;complete&#39;</span><span class="p">,</span> 
             <span class="n">cMethod</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;inconsistent&#39;</span><span class="p">,</span> <span class="n">cValue</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.5</span><span class="p">,</span> <span class="n">plotDendrogram</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">transform</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;original&#39;</span><span class="p">,</span> <span class="n">distance_kwargs</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="p">{})</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="s1">&#39;Cluster&#39;</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Cluster time series data using hierarchical clustering.</span>
@@ -328,6 +328,8 @@
 <span class="sd">        ``pattern``: Pattern distance using behavioral features</span>
 <span class="sd">        </span>
 <span class="sd">        ``pattern_dtw``: Pattern distance with Dynamic Time Warping</span>
+
+<span class="sd">        ``pattern_wdtw``: Pattern distance with Weighted Dynamic Time Warping</span>
 
 <span class="sd">        ``dtw``: Dynamic Time Warping distance</span>
 
