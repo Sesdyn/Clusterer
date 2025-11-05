@@ -4,6 +4,7 @@
 import numpy as np
 from simclstr.plotting import interactive_plot_clusters, multiple_tabs_interactive_plot_clusters, plot_clusters
 from simclstr.clusterer import read_time_series, perform_clustering, simulate_from_vensim
+from print_distances import print_distances
 import os
 
 def main():
@@ -27,14 +28,15 @@ def main():
 
     clustering_results = perform_clustering(simulation_results, distance='pattern_wdtw', cMethod='maxclust', cValue = 6, plotDendrogram=True, transform='normalize')
 
-    from scipy.spatial.distance import squareform
-    import pandas as pd
-
-    dist_matrix = squareform(clustering_results[0])
-
-    pd.DataFrame(dist_matrix).to_csv("data_files/Arms_Race_dist_matrix.csv", index=False, header=False)
-
     multiple_tabs_interactive_plot_clusters(clustering_results[1], 'pattern_wdtw')
+
+    print_distances(clustering_results[0], [307, 528, 988, 786, 1011, 1008])
+
+    submatrix = [time_series for time_series in simulation_results if time_series.index in [307, 528, 988, 786, 1011, 1008]]
+    
+    submatrix_clustering_results = perform_clustering(submatrix, distance='pattern_wdtw', cMethod='maxclust', cValue = 1, plotDendrogram=True, transform='normalize')
+
+    multiple_tabs_interactive_plot_clusters(submatrix_clustering_results[1], 'pattern_wdtw')
 
 if __name__ == "__main__":
     main()
