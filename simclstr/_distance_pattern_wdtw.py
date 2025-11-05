@@ -131,16 +131,16 @@ def _wdtw_distance(d1: np.ndarray, d2: np.ndarray, wSlopeError: float, wCurvatur
 
     i, j = n1, n2
     w_path = 0
-    total_weight = 0 
+    total_weight = 0
     while i > 0 or j > 0:
         if i == 0:
             j -= 1
             w_path += 1
-            total_weight += d2[2, j+1] * d1[2, i]
+            total_weight += d2[2, j] * d1[2, i-1]
         elif j == 0:
             i -= 1
             w_path += 1
-            total_weight += d1[2, i+1] * d2[2, j]
+            total_weight += d1[2, i] * d2[2, j-1]
         else:
             up = dtw[i-1, j]
             left = dtw[i, j-1]
@@ -148,14 +148,14 @@ def _wdtw_distance(d1: np.ndarray, d2: np.ndarray, wSlopeError: float, wCurvatur
             if up <= left and up <= diag:
                 i -= 1
                 w_path += 1
-                total_weight += d1[2, i+1] * d2[2, j]
+                total_weight += d1[2, i] * d2[2, j-1]
             elif left <= up and left <= diag:
                 j -= 1
                 w_path += 1
-                total_weight += d2[2, j+1] * d1[2, i] 
+                total_weight += d2[2, j] * d1[2, i-1] 
             else:
                 i -= 1
                 j -= 1
                 w_path += 1
-                total_weight += d1[2, i+1] * d2[2, j+1]
+                total_weight += d1[2, i] * d2[2, j]
     return dtw[n1, n2] / total_weight
