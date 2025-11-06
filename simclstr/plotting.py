@@ -998,8 +998,9 @@ def _create_cluster_callbacks(app, cluster_id, time_series_data, cluster_data):
                 # Print information to terminal
                 print(f"\nTime Series Clicked:")
                 print(f"Label: {ts_info['name']}")
-                print(f"Data: {ts_info['data']}")
-                print(f"Feature vector: {ts_info['feature_vector']}")
+                #print(f"Data: {ts_info['data']}")
+                print("Feature vector:")
+                print(ts_info['feature_vector'])
                 print(f"Cluster id: {ts_info['cluster_id']}")
                 print("-" * 80)
                 
@@ -1180,8 +1181,9 @@ def _create_representatives_callback(app, representative_data, cluster_data):
                 # Print information to terminal
                 print(f"\nRepresentative Time Series Clicked:")
                 print(f"Label: {repr_info['index_of_ts']}: {repr_info['name']}")
-                print(f"Data: {repr_info['data'].tolist()}")
-                print(f"Feature vector: {repr_info['feature_vector']}")
+                #print(f"Data: {repr_info['data'].tolist()}")
+                print("Feature vector:")
+                print(repr_info['feature_vector'])
                 print(f"Cluster id: {repr_info['cluster_id']}")
                 print("-" * 80)
                 

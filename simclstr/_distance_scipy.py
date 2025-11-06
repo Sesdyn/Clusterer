@@ -29,12 +29,11 @@ def _distance_scipy(list_of_ts_objects: List['TimeSeries'], metric: str = 'eucli
     dRow : np.ndarray
         Condensed distance matrix as 1D array of length n_samples * (n_samples - 1) / 2.
     list_of_ts_objects : List['TimeSeries']
-        List of TimeSeries objects with updated index and feature vector.
+        List of TimeSeries objects with updated feature vector.
     """
     # For scipy distance metrics, the feature vector is the data itself
     for i, each_ts in enumerate(list_of_ts_objects):
         each_ts.feature_vector = each_ts.data
-        each_ts.index = i
 
     # Convert list of arrays to 2D numpy array for distance functions
     data = np.array([ts.data for ts in list_of_ts_objects])

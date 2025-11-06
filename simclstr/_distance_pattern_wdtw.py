@@ -37,7 +37,7 @@ def _distance_pattern_wdtw(list_of_ts_objects: List['TimeSeries'], metric: str =
     dRow : np.ndarray
         Condensed distance matrix as 1D array of length n_samples * (n_samples - 1) / 2.
     list_of_ts_objects : List['TimeSeries']
-        List of TimeSeries objects with updated index and feature vector.
+        List of TimeSeries objects with updated feature vector.
     """
     significanceLevel = distance_kwargs.get('significanceLevel', 0.0001)
     wSlopeError = distance_kwargs.get('wSlopeError', 1)
@@ -53,10 +53,9 @@ def _distance_pattern_wdtw(list_of_ts_objects: List['TimeSeries'], metric: str =
     n = len(data)
     dRow = np.zeros(shape=(n * (n - 1) // 2,))
 
-    # Update the feature vector and index of the TimeSeries objects
+    # Update the feature vector of the TimeSeries objects
     for i, each_ts in enumerate(list_of_ts_objects):
         each_ts.feature_vector = transposed_features[i]
-        each_ts.index = i
 
     dRow = _compute_pattern_wdtw_distances(features, dRow, wSlopeError, wCurvatureError)
 

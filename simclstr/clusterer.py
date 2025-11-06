@@ -111,15 +111,15 @@ def read_time_series(file_path: str, withClusters: bool = False) -> List['TimeSe
         try:
             df_clusters = pd.read_excel(file_path, sheet_name='clusters')
             clusters_original = df_clusters.iloc[:, 0].tolist()
-            list_of_ts_objects = [TimeSeries(label, data, previous_cluster_id) for label, data, previous_cluster_id in zip(labels, data_arrays, clusters_original)]
+            list_of_ts_objects = [TimeSeries(idx, label, data, previous_cluster_id) for idx, (label, data, previous_cluster_id) in enumerate(zip(labels, data_arrays, clusters_original))]
             return list_of_ts_objects
             
         except (FileNotFoundError, KeyError, ValueError):
             clusters_original = ['NA'] * noRuns
-            list_of_ts_objects = [TimeSeries(label, data, previous_cluster_id) for label, data, previous_cluster_id in zip(labels, data_arrays, clusters_original)]
+            list_of_ts_objects = [TimeSeries(idx, label, data, previous_cluster_id) for idx, (label, data, previous_cluster_id) in enumerate(zip(labels, data_arrays, clusters_original))]
             return list_of_ts_objects
     else:
-        list_of_ts_objects = [TimeSeries(label, data) for label, data in zip(labels, data_arrays)]
+        list_of_ts_objects = [TimeSeries(idx, label, data) for idx, (label, data) in enumerate(zip(labels, data_arrays))]
         return list_of_ts_objects
 
 
@@ -163,12 +163,12 @@ def simulate_from_vensim(model_path: str, parameter_set: Dict[str, Union[float, 
     
     list_of_ts_objects = []
 
-    for combination in param_combinations:
+    for idx, combination in enumerate(param_combinations):
         current_params = dict(zip(param_names, combination))
         simulation_results = sd_model.run(params=current_params)
         time_series_data = simulation_results[output_variable].values
         label = ', '.join([f"{name}={value}" for name, value in current_params.items()])
-        list_of_ts_objects.append(TimeSeries(label, time_series_data))
+        list_of_ts_objects.append(TimeSeries(idx, label, time_series_data))
     
     generated_python_file = os.path.splitext(model_path)[0] + '.py'
     if os.path.exists(generated_python_file):
@@ -450,9 +450,9 @@ class TimeSeries:
     previous_cluster_id : int
         Previous cluster id of the time series, provided for comparison.
     """
-    def __init__(self, label: str, data: np.ndarray, previous_cluster_id: int = None):
+    def __init__(self, index: int, label: str, data: np.ndarray, previous_cluster_id: int = None):
         self.label = label
-        self.index = None
+        self.index = index
         self.data = data
         self.feature_vector = None
         self.cluster_id = None
