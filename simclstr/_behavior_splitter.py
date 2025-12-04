@@ -68,9 +68,9 @@ def _split_behavior(data_series: np.ndarray, slope: np.ndarray, curvature: np.nd
     transition_points = np.flatnonzero(transitions)
     number_of_sections = int(len(transition_points) + 1)
     
-    section_lengths = np.diff(np.concatenate(([0], transition_points + 1, [len(abs_data)]))).astype(np.int32)
+    section_lengths = np.diff(np.concatenate(([0], transition_points + 1, [len(abs_data)])))
 
-    feature_vector = np.empty((3, number_of_sections), dtype=np.int32)
+    feature_vector = np.empty((3, number_of_sections), dtype=np.float64)
 
     if number_of_sections == 1:
         feature_vector[0, 0] = sign_slope[0]
