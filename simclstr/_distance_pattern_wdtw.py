@@ -1,5 +1,5 @@
 import numpy as np
-from numba import njit
+from numba import njit, prange
 from typing import Tuple, List, TYPE_CHECKING
 from ._behavior_splitter import _construct_features
 
@@ -62,7 +62,7 @@ def _distance_pattern_wdtw(list_of_ts_objects: List['TimeSeries'], metric: str =
     return dRow, list_of_ts_objects
 
 
-@njit
+@njit(parallel=True)
 def _compute_pattern_wdtw_distances(features: List[np.ndarray], dRow: np.ndarray, wSlopeError: float, wCurvatureError: float) -> np.ndarray:
     """
     Compute pairwise DTW distances between all feature vectors.
@@ -83,14 +83,14 @@ def _compute_pattern_wdtw_distances(features: List[np.ndarray], dRow: np.ndarray
     np.ndarray
         Updated distance array containing pairwise DTW distances.
     """
-    index = 0
-    for i in range(len(features)):
+    n = len(features)
+    for i in prange(n - 1):
+        base = i * n - (i * (i + 1)) // 2
         feature_i = features[i]
-        for j in range(i + 1, len(features)):
-            feature_j = features[j]
-            distance = _wdtw_distance(feature_i, feature_j, wSlopeError, wCurvatureError)
+        for j in range(i + 1, n):
+            index = base + (j - i - 1)
+            distance = _wdtw_distance(feature_i, features[j], wSlopeError, wCurvatureError)
             dRow[index] = distance
-            index += 1
     return dRow
 
 

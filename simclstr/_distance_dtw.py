@@ -1,5 +1,5 @@
 import numpy as np
-from numba import njit
+from numba import njit, prange
 from typing import Tuple, List, Dict, TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -40,13 +40,14 @@ def _distance_dtw(list_of_ts_objects: List['TimeSeries'], metric: str = 'dtw', d
     # Convert list of arrays to 2D numpy array for distance functions
     data = np.array([ts.data for ts in list_of_ts_objects])
 
-    dRow = np.zeros(shape=(np.sum(np.arange(len(data))), ))
+    n = len(data)
+    dRow = np.zeros(shape=(n * (n - 1) // 2,))
 
     dRow = compute_dtw_distances(data, dRow)
 
     return dRow, list_of_ts_objects
 
-@njit
+@njit(parallel=True)
 def compute_dtw_distances(data: np.ndarray, dRow: np.ndarray) -> np.ndarray:
     """
     Compute DTW distances between all pairs using Numba for performance.
@@ -63,25 +64,24 @@ def compute_dtw_distances(data: np.ndarray, dRow: np.ndarray) -> np.ndarray:
     np.ndarray
         Array filled with DTW distances.
     """
-    index = -1
-    for i in range(len(data)):            
-        for j in range(i+1, len(data)):
-            index += 1
-            
-            sample1 = data[i]
+    n = len(data)
+    for i in prange(n - 1):
+        base = i * n - (i * (i + 1)) // 2
+        sample1 = data[i]
+        n1 = sample1.shape[0]
+        for j in range(i + 1, n):
+            index = base + (j - i - 1)
             sample2 = data[j]
-            
-            dtw = np.zeros((sample1.shape[0] + 1, sample2.shape[0] + 1))
-            dtw[:, 0] = np.inf
-            dtw[0, :] = np.inf
+            n2 = sample2.shape[0]
+
+            dtw = np.full((n1 + 1, n2 + 1), np.inf)
             dtw[0, 0] = 0
-            
-            for k in range(sample1.shape[0]):
-                for l in range(sample2.shape[0]):
-                    cost = np.absolute(sample1[k] - sample2[l])
+
+            for k in range(n1):
+                for l in range(n2):
+                    cost = abs(sample1[k] - sample2[l])
                     dtw[k + 1, l + 1] = cost + min(dtw[k + 1, l], dtw[k, l + 1], dtw[k, l])
-            
-            distance = dtw[sample1.shape[0], sample2.shape[0]]
-            dRow[index] = distance
+
+            dRow[index] = dtw[n1, n2]
             
     return dRow
