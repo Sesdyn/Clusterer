@@ -146,7 +146,7 @@ def _distance_pattern(list_of_ts_objects: List['TimeSeries'], metric: str = 'pat
     dRow : np.ndarray
         Condensed distance matrix as 1D array of length n_samples * (n_samples - 1) / 2.
     list_of_ts_objects : List['TimeSeries']
-        List of TimeSeries objects with updated index and feature vector.
+        List of TimeSeries objects with updated feature vector.
     """
     significanceLevel = distance_kwargs.get('significanceLevel', 0.0001)
     sisterCount = distance_kwargs.get('sisterCount', 50)
@@ -163,10 +163,9 @@ def _distance_pattern(list_of_ts_objects: List['TimeSeries'], metric: str = 'pat
     n = len(data)
     dRow = np.zeros(shape=(n * (n - 1) // 2,))
 
-    # Update the feature vector and index of the TimeSeries objects
+    # Update the feature vector of the TimeSeries objects
     for i, each_ts in enumerate(list_of_ts_objects):
         each_ts.feature_vector = transposed_features[i]
-        each_ts.index = i
 
     index = 0
     for i in range(n):

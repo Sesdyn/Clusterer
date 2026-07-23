@@ -87,7 +87,7 @@
 <p>MDL dosyasının bulunduğu yerde, path’de pycache ve py dosyaları oluşuyor, onları main kodda fonksiyonun altında silmek lazım.</p>
 <p>import sys’den model_path’e olan 4 satır package yayımlanmadan silinerek commented linelar kullanılmalıdır.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">#from simclstr.clusterer import perform_clustering, simulate_from_vensim</span>
@@ -127,24 +127,24 @@
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 Simulation Run 1:
-&lt;simclstr.clusterer.TimeSeries object at 0x1342154d0&gt;
+&lt;simclstr.clusterer.TimeSeries object at 0x166c2aba0&gt;
 ----------------------------------------
 Simulation Run 2:
-&lt;simclstr.clusterer.TimeSeries object at 0x134214d50&gt;
+&lt;simclstr.clusterer.TimeSeries object at 0x127069310&gt;
 ----------------------------------------
 Simulation Run 3:
-&lt;simclstr.clusterer.TimeSeries object at 0x13661d9d0&gt;
+&lt;simclstr.clusterer.TimeSeries object at 0x1240c7110&gt;
 ----------------------------------------
 Simulation Run 4:
-&lt;simclstr.clusterer.TimeSeries object at 0x13661e3d0&gt;
+&lt;simclstr.clusterer.TimeSeries object at 0x167678770&gt;
 ----------------------------------------
 Simulation Run 5:
-&lt;simclstr.clusterer.TimeSeries object at 0x13661fbd0&gt;
+&lt;simclstr.clusterer.TimeSeries object at 0x166733ce0&gt;
 ----------------------------------------
 </pre></div></div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">clustering_results</span> <span class="o">=</span> <span class="n">perform_clustering</span><span class="p">(</span><span class="n">simulation_results</span><span class="p">,</span> <span class="n">distance</span><span class="o">=</span><span class="s1">&#39;pattern_wdtw&#39;</span><span class="p">,</span> <span class="n">cMethod</span><span class="o">=</span><span class="s1">&#39;maxclust&#39;</span><span class="p">,</span> <span class="n">cValue</span> <span class="o">=</span> <span class="mi">6</span><span class="p">,</span> <span class="n">plotDendrogram</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="s1">&#39;normalize&#39;</span><span class="p">)</span>
@@ -168,7 +168,7 @@ Simulation Run 5:
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">clustering_results</span> <span class="o">=</span> <span class="n">perform_clustering</span><span class="p">(</span><span class="n">simulation_results</span><span class="p">,</span> <span class="n">distance</span><span class="o">=</span><span class="s1">&#39;euclidean&#39;</span><span class="p">,</span> <span class="n">cMethod</span><span class="o">=</span><span class="s1">&#39;maxclust&#39;</span><span class="p">,</span> <span class="n">cValue</span> <span class="o">=</span> <span class="mi">6</span><span class="p">,</span> <span class="n">plotDendrogram</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="s1">&#39;normalize&#39;</span><span class="p">)</span>

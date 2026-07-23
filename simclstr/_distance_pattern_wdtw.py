@@ -1,5 +1,5 @@
 import numpy as np
-from numba import njit
+from numba import njit, prange
 from typing import Tuple, List, TYPE_CHECKING
 from ._behavior_splitter import _construct_features
 
@@ -37,7 +37,7 @@ def _distance_pattern_wdtw(list_of_ts_objects: List['TimeSeries'], metric: str =
     dRow : np.ndarray
         Condensed distance matrix as 1D array of length n_samples * (n_samples - 1) / 2.
     list_of_ts_objects : List['TimeSeries']
-        List of TimeSeries objects with updated index and feature vector.
+        List of TimeSeries objects with updated feature vector.
     """
     significanceLevel = distance_kwargs.get('significanceLevel', 0.0001)
     wSlopeError = distance_kwargs.get('wSlopeError', 1)
@@ -53,17 +53,16 @@ def _distance_pattern_wdtw(list_of_ts_objects: List['TimeSeries'], metric: str =
     n = len(data)
     dRow = np.zeros(shape=(n * (n - 1) // 2,))
 
-    # Update the feature vector and index of the TimeSeries objects
+    # Update the feature vector of the TimeSeries objects
     for i, each_ts in enumerate(list_of_ts_objects):
         each_ts.feature_vector = transposed_features[i]
-        each_ts.index = i
 
     dRow = _compute_pattern_wdtw_distances(features, dRow, wSlopeError, wCurvatureError)
 
     return dRow, list_of_ts_objects
 
 
-@njit
+@njit(parallel=True)
 def _compute_pattern_wdtw_distances(features: List[np.ndarray], dRow: np.ndarray, wSlopeError: float, wCurvatureError: float) -> np.ndarray:
     """
     Compute pairwise DTW distances between all feature vectors.
@@ -84,14 +83,14 @@ def _compute_pattern_wdtw_distances(features: List[np.ndarray], dRow: np.ndarray
     np.ndarray
         Updated distance array containing pairwise DTW distances.
     """
-    index = 0
-    for i in range(len(features)):
+    n = len(features)
+    for i in prange(n - 1):
+        base = i * n - (i * (i + 1)) // 2
         feature_i = features[i]
-        for j in range(i + 1, len(features)):
-            feature_j = features[j]
-            distance = _wdtw_distance(feature_i, feature_j, wSlopeError, wCurvatureError)
+        for j in range(i + 1, n):
+            index = base + (j - i - 1)
+            distance = _wdtw_distance(feature_i, features[j], wSlopeError, wCurvatureError)
             dRow[index] = distance
-            index += 1
     return dRow
 
 
@@ -131,16 +130,16 @@ def _wdtw_distance(d1: np.ndarray, d2: np.ndarray, wSlopeError: float, wCurvatur
 
     i, j = n1, n2
     w_path = 0
-    total_weight = 0 
+    total_weight = 0
     while i > 0 or j > 0:
         if i == 0:
             j -= 1
             w_path += 1
-            total_weight += d2[2, j+1] * d1[2, i]
+            total_weight += d2[2, j] * d1[2, i-1]
         elif j == 0:
             i -= 1
             w_path += 1
-            total_weight += d1[2, i+1] * d2[2, j]
+            total_weight += d1[2, i] * d2[2, j-1]
         else:
             up = dtw[i-1, j]
             left = dtw[i, j-1]
@@ -148,14 +147,14 @@ def _wdtw_distance(d1: np.ndarray, d2: np.ndarray, wSlopeError: float, wCurvatur
             if up <= left and up <= diag:
                 i -= 1
                 w_path += 1
-                total_weight += d1[2, i+1] * d2[2, j]
+                total_weight += d1[2, i] * d2[2, j-1]
             elif left <= up and left <= diag:
                 j -= 1
                 w_path += 1
-                total_weight += d2[2, j+1] * d1[2, i] 
+                total_weight += d2[2, j] * d1[2, i-1] 
             else:
                 i -= 1
                 j -= 1
                 w_path += 1
-                total_weight += d1[2, i+1] * d2[2, j+1]
+                total_weight += d1[2, i] * d2[2, j]
     return dtw[n1, n2] / total_weight
